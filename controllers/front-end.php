@@ -10,14 +10,14 @@ final class KVP_Front_End {
 	
 	public function the_content($content) {
 		
-		$this->get_metadata();
 		$settings = get_option('kvp_settings');
+		$this->get_metadata();
 		
-		if( (isset($this->settings['post_format']) && 'standard' !== $this->settings['post_format']) && !isset($settings['show_video_in_list']) && has_post_thumbnail() && !is_single() )
+		if( empty($this->metadata['provider']) || empty($this->metadata['ID']) || get_post_type() !== 'post' || ( !isset($settings['post_format']) && !is_single() ) || ( isset($settings['post_format']) && 'standard' === $settings['post_format'] && !is_single() ) )
+			return $content;
+		
+		if( !isset($settings['show_video_in_list']) && has_post_thumbnail() && !is_single() )
 			return the_post_thumbnail();
-		
-		if( empty($this->metadata['provider']) || empty($this->metadata['ID']) )
-			return false;
 		
 		$format = apply_filters('kvp_' . $this->metadata['provider'] . '_video_embed', '');
 		$size	= $this->get_thumbnail_size();

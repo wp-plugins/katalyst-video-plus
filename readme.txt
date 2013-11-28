@@ -4,7 +4,7 @@ Donate link: http://keisermedia.com/projects/katalyst-video-plus/
 Tags: import, youtube, thumbnail, twitch, vimeo, ustream, 
 Requires at least: 3.5
 Tested up to: 3.7.1
-Stable tag: 1.1.1
+Stable tag: 1.1.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -36,6 +36,10 @@ e.g.
 4. Error Log
 
 == Changelog ==
+
+= 1.1.2 =
+* [Changed] 'the_content' filter now only effects 'post' post types.
+* [Changed] Both post thumbnail and video do not show in archive and single posts.
 
 = 1.1.1 =
 * [Fixed] Wrong inclusion path.
