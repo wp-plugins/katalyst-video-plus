@@ -18,7 +18,7 @@ final class KVP_Admin {
 		add_action('wp_ajax_kvp_inline_save', array($this, 'edit_source_ajax') );
 		
 		add_action('admin_menu', array($this, 'add_menu_pages') );
-		add_action('admin_init', array($this, 'load_dependencies') );
+		add_action('admin_init', array($this, 'load_dependencies'), 9 );
 		add_action('delete_post', array($this, 'delete_post_meta') );
 		
 		do_action('kvp_init');
@@ -62,8 +62,8 @@ final class KVP_Admin {
 	
 	public function load_dependencies() {
 		
-		if( !class_exists( 'EDD_SL_Plugin_Updater' ) )
-			include_once(KVP__PLUGIN_DIR . 'lib/EDD_SL_Plugin_Updater.php');
+		if( !class_exists( 'KVP_License' ) )
+			include_once(KVP__PLUGIN_DIR . 'models/updater.php');
 		
 	}
 	

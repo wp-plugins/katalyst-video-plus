@@ -4,7 +4,7 @@ Donate link: http://keisermedia.com/projects/katalyst-video-plus/
 Tags: import, youtube, thumbnail, twitch, vimeo, ustream, 
 Requires at least: 3.5
 Tested up to: 3.8.1
-Stable tag: 1.2.0
+Stable tag: 1.2.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -36,6 +36,9 @@ e.g.
 4. Error Log
 
 == Changelog ==
+
+= 1.2.1 =
+* [Added] License Options
 
 = 1.2.0 =
 * [Added] Ability to edit pre-existing sources.
