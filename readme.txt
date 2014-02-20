@@ -8,11 +8,20 @@ Stable tag: 1.2.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Automatically import video from video hosting providers to your website.
+Automatically import and embed video content from video hosting and streaming providers to WordPress.
 
 == Description ==
 
-Automatically import video from video hosting providers to your website.
+Katalyst Video Plus enables automatic content syncing between a video content or streaming provider and WordPress.
+
+**Who is using Katalyst Video Plus?**
+Take a look at some of the best sites in the [Katalyst Video Plus Showcase](http://katalystvideoplus.com/showcase/ "Katalyst Video Plus Showcase").
+
+**Extensions**
+Katalyst Video Plus has free and premium extensions to expand functionality. All officially approved extensions can be found in the [Katalyst Videos Plus Add-ons](http://katalystvideoplus.com/extensions/ "Katalyst Videos Plus Add-ons") section.
+
+**More Information**
+Visit the Katalyst Video Plus website for more information on [Katalyst Videos Plus](http://katalystvideoplus.com/ "Katalyst Videos Plus").
 
 Must be used with KVP provider plugins to interact with hosting providers.
 
@@ -31,9 +40,9 @@ e.g.
 == Screenshots ==
 
 1. Front-end display with Import Post Format settings as Standard
-2. Source List
-3. Import Process
-4. Error Log
+2. Front-end single post
+3. Admin Page: Sources
+4. Sources Inline Edit
 
 == Changelog ==
 
