@@ -22,7 +22,14 @@ final class KVP_Front_End {
 		$format = apply_filters('kvp_' . $this->metadata['provider'] . '_video_embed', '', $this->metadata);
 		$size	= $this->get_thumbnail_size();
 		
-		$video_html = sprintf( $format, apply_filters('kvp_' . $this->metadata['provider'] . '_id', $this->metadata['ID']), $this->metadata['username'], $size[0], ($size[0] * 9 / 16) );
+		$atts = array(
+			'username'	=> $this->metadata['username'],
+			'ID'		=> apply_filters('kvp' . $this->metadata['provider'] . '_id', $this->metadata['ID']),
+			'height'	=> ( $size[0] * 9 / 16 ),
+			'width'		=> $size[0],
+		);
+		
+		$video_html = apply_filters('kvp_' . $this->metadata['provider'] . '_video_embed', '', $atts );
 		
 		if( !is_single() )
 			return $video_html;

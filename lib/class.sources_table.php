@@ -81,16 +81,20 @@ class KVP_Sources_Table extends WP_List_Table {
 				if( 'locked' === get_transient('kvp_' . $item['ID'] . '_lock') )
 					return __('Importing', 'kvp');
 				
-				if( isset($item['import']['active']) )
-					return __('Import Completed', 'kvp');
+				if( !isset($item['import']['last_import']) )
+					return __('Initial Import Pending', 'kvp');
+				
+				return __('Import Completed', 'kvp');
 					
-				return __('Initial Import Pending', 'kvp');
 			
             case 'last_import':
             	if( isset($item['import'][$column_name]) )
             		return date(get_option('date_format') . ' ' . get_option('time_format'), $item['import'][$column_name]);
 
             	return __('N/A', 'kvp');
+            
+            case 'next_import':
+            	return get_date_from_gmt( date( get_option('date_format') . ' ' . get_option('time_format'), wp_next_scheduled('kvp_import_cron') ), get_option('date_format') . ' ' . get_option('time_format') );
 
             default:
                 return print_r($item, true);
@@ -157,6 +161,7 @@ class KVP_Sources_Table extends WP_List_Table {
 			'categories'	=> __('Categories', 'kvp'),
 			'status'		=> __('Status', 'kvp'),
             'last_import'	=> __('Last Import', 'kvp'),
+            'next_import'	=> __('Next Import', 'kvp'),
         );
         return $columns;
     }

@@ -6,7 +6,7 @@ foreach( $this->providers as $provider => $info )
 ?>
 <?php if( empty($this->providers) ) : ?>
 
-<p class="howto"><?php printf('<a href="%s" title="%s" target="_blank">%s</a>', 'http://wordpress.org/plugins/kvp-youtube-lite/', __('WordPress Repository', 'kvp'), __( 'Download a provider here.', 'kvp')); ?></p>
+<p class="howto"><?php printf('<a href="%s" title="%s" target="_blank">%s</a>', 'http://katalystvideoplus.com/extensions/', __('Katalyst Video Plus: Extensions', 'kvp'), __( 'Download a provider here.', 'kvp')); ?></p>
 
 <?php else : ?>
 
