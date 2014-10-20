@@ -1,35 +1,35 @@
-var inlineEditSource;
+var inlineEditAccount;
 (function($) {
-inlineEditSource = {
+inlineEditAccount = {
 
 	init : function(){
 		var t = this, qeRow = $('#inline-edit');
 
-		t.type = $('table.widefat').hasClass('pages') ? 'page' : 'post';
-		t.what = '#source-';
+		t.type = $('table.widefat').hasClass('accounts');
+		t.what = '#account-';
 
 		// prepare the edit rows
 		qeRow.keyup(function(e){
 			if ( e.which === 27 ) {
-				return inlineEditSource.revert();
+				return inlineEditAccount.revert();
 			}
 		});
 
 		$('a.cancel', qeRow).click(function(){
-			return inlineEditSource.revert();
+			return inlineEditAccount.revert();
 		});
 		$('a.save', qeRow).click(function(){
-			return inlineEditSource.save(this);
+			return inlineEditAccount.save(this);
 		});
 		$('td', qeRow).keydown(function(e){
 			if ( e.which === 13 ) {
-				return inlineEditSource.save(this);
+				return inlineEditAccount.save(this);
 			}
 		});
 
 		// add events
 		$('#the-list').on('click', 'a.editinline', function(){
-			inlineEditSource.edit(this);
+			inlineEditAccount.edit(this);
 			return false;
 		});
 
@@ -56,7 +56,7 @@ inlineEditSource = {
 			id = t.getId(id);
 		}
 
-		fields = ['username', 'author', 'api_key', 'oauth_id', 'oauth_secret'];
+		fields = ['username', 'author', 'developer_key', 'oauth_id', 'oauth_secret'];
 
 		// add the new blank row
 		editRow = $('#inline-edit').clone(true);
@@ -69,16 +69,16 @@ inlineEditSource = {
 
 		// populate the data
 		rowData = $('#inline_'+id);
-		if ( !$(':input[name="edit_source[author]"] option[value="edit_source[' + $('.author', rowData).text() + ']"]', editRow).val() ) {
+		if ( !$(':input[name="edit_account[author]"] option[value="edit_account[' + $('.author', rowData).text() + ']"]', editRow).val() ) {
 			// author no longer has edit caps, so we need to add them to the list of authors
-			$(':input[name="edit_source[author]"]', editRow).prepend('<option value="edit_source[' + $('.author', rowData).text() + ']">' + $('#' + t.type + '-' + id + ' .author').text() + '</option>');
+			$(':input[name="edit_account[author]"]', editRow).prepend('<option value="edit_account[' + $('.author', rowData).text() + ']">' + $('#' + t.type + '-' + id + ' .author').text() + '</option>');
 		}
-		if ( $( ':input[name="edit_source[author]"] option', editRow ).length === 1 ) {
+		if ( $( ':input[name="edit_account[author]"] option', editRow ).length === 1 ) {
 			$('label.inline-edit-author', editRow).hide();
 		}
 
 		for ( f = 0; f < fields.length; f++ ) {
-			$(':input[name="edit_source[' + fields[f] + ']"]', editRow).val( $('.'+fields[f], rowData).text() );
+			$(':input[name="edit_account[' + fields[f] + ']"]', editRow).val( $('.'+fields[f], rowData).text() );
 		}
 
 		// hierarchical taxonomies
@@ -115,7 +115,7 @@ inlineEditSource = {
 
 		fields = $('#edit-'+id).find(':input').serialize();
 		params = fields + '&' + $.param(params);
-
+		
 		// make ajax request
 		$.post( ajaxurl, params,
 			function(r) {
@@ -123,9 +123,9 @@ inlineEditSource = {
 
 				if (r) {
 					if ( -1 !== r.indexOf( '<tr' ) ) {
-						$(inlineEditSource.what+id).remove();
+						$(inlineEditAccount.what+id).remove();
 						$('#edit-'+id).before(r).remove();
-						$(inlineEditSource.what+id).hide().fadeIn();
+						$(inlineEditAccount.what+id).hide().fadeIn();
 					} else {
 						r = r.replace( /<.[^<>]*?>/g, '' );
 						$('#edit-'+id+' .inline-edit-save .error').html(r).show();
@@ -169,6 +169,6 @@ inlineEditSource = {
 	}
 };
 
-$( document ).ready( function(){ inlineEditSource.init(); } );
+$( document ).ready( function(){ inlineEditAccount.init(); } );
 
 }(jQuery));

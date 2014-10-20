@@ -1,39 +1,55 @@
 <?php if( ! defined('ABSPATH') ) { header('Status: 403 Forbidden'); header('HTTP/1.1 403 Forbidden'); exit(); }
-/*
-Plugin Name: Katalyst Video Plus
-Plugin URI: http://keisermedia.com/projects/katalyst-video-plus
-Description: Automatically import and integrate videos from hosting providers.
-Author: Keiser Media Group
-Author URI: http://keisermedia.com/
-Version: 1.2.1
-Text Domain: kvp
-Domain Path: /languages
-License: GPL3
+/**
+* @link             http://katalystvideoplus.com
+* @since            2.0.0
+* @package          Katalyst_Video_Plus
+*
+* @wordpress-plugin
+* Plugin Name:      Katalyst Video Plus
+* Plugin URI:       http://katalystvideoplus.com/
+* Description:      Create a multiple source video network with WordPress.
+* Version:          2.0.0
+* Author:           Keiser Media Group
+* Author URI:       http://keisermedia.com/
+* License:          GPL-2.0+
+* License URI:      http://www.gnu.org/licenses/gpl-2.0.txt
+* Text Domain:      katalyst-video-plus
+* Domain Path:      /lang
+* License:			GPL3
+*
+*	Copyright 2013  keisermedia.com  (email: support@keisermedia.com)
+*
+*	This program is free software: you can redistribute it and/or modify
+*   it under the terms of the GNU General Public License as published by
+*   the Free Software Foundation, either version 3 of the License, or
+*   (at your option) any later version.
+*
+*   This program is distributed in the hope that it will be useful,
+*   but WITHOUT ANY WARRANTY; without even the implied warranty of
+*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*   GNU General Public License for more details.
+*
+*   You should have received a copy of the GNU General Public License
+*   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*
+**/
 
-	Copyright 2013  keisermedia.com  (email: support@keisermedia.com)
+require_once plugin_dir_path( __FILE__ ) . 'inc/class-activator.php';
+require_once plugin_dir_path( __FILE__ ) . 'inc/class-deactivator.php';
+require_once plugin_dir_path( __FILE__ ) . 'inc/class-katalyst-video-plus.php';
 
-	This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+register_activation_hook( __FILE__, array( 'Katalyst_Video_Plus_Activator', 'activate' ) );
+register_deactivation_hook( __FILE__, array( 'Katalyst_Video_Plus_Deactivator', 'deactivate' ) );
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+/**
+ * Begins execution of the plugin.
+ *
+ * @since    2.0.0
+ */
+function run_katalyst_video_plus() {
 
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+	$katalyst_video_plus = new Katalyst_Video_Plus( 'Katalyst Video Plus', '2.0.0', '3.5' );
+	$katalyst_video_plus->run();
 
-*/
-
-define( 'KVP__VERSION', '1.2.1' );
-define( 'KVP__MINIMUM_WP_VERSION', '3.5' );
-define( 'KVP__PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
-
-include_once( KVP__PLUGIN_DIR . 'controllers/kvp.php' );
-
-$kvp = new Katalyst_Video_Plus();
-
-register_activation_hook( __FILE__ , array($kvp, 'activation') );
-register_activation_hook( __FILE__ , array($kvp, 'deactivation') );
+}
+run_katalyst_video_plus();

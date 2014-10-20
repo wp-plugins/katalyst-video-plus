@@ -1,25 +1,80 @@
 <?php if( ! defined('ABSPATH') ) { header('Status: 403 Forbidden'); header('HTTP/1.1 403 Forbidden'); exit(); }
-
-class KVP_License {
-
+/**
+* Updates extensions.
+*
+* @link       http://katalystvideoplus.com
+* @since      2.0.0
+* @package    Katalyst_Video_Plus
+* @subpackage Katalyst_Video_Plus/inc
+* @author     Keiser Media <support@keisermedia.com>
+*/
+class KVP_Plugin_Updater {
+	
+	/**
+	 * Extension primary file.
+	 *
+	 * @since    2.0.0
+	 * @access   private
+	 * @var      string File location.
+	 */
 	private $file;
+	
+	/**
+	 * Extension license key.
+	 *
+	 * @since    2.0.0
+	 * @access   private
+	 * @var      string License key.
+	 */
 	private $license;
+	
+	/**
+	 * Extension Name.
+	 *
+	 * @since    2.0.0
+	 * @access   private
+	 * @var      string Extension name.
+	 */
 	private $item_name;
-	private $item_shortname;
+	
+	/**
+	 * Extension slug.
+	 *
+	 * @since    2.0.0
+	 * @access   private
+	 * @var      string Extension slug.
+	 */
+	private $item_slug;
+	
+	/**
+	 * Extension version.
+	 *
+	 * @since    2.0.0
+	 * @access   private
+	 * @var      string Extension version.
+	 */
 	private $version;
+	
+	/**
+	 * Extension author.
+	 *
+	 * @since    2.0.0
+	 * @access   private
+	 * @var      string Extension author.
+	 */
 	private $author;
 	private $api_url = 'http://katalystvideoplus.com';
 
 	function __construct( $_file, $_item_name, $_version, $_author, $_api_url = null ) {
 		$options = get_option('kvp_settings');
 
-		$this->file           = $_file;
-		$this->item_name      = $_item_name;
-		$this->item_shortname = 'kvp_' . preg_replace( '/[^a-zA-Z0-9_\s]/', '', str_replace( ' ', '_', strtolower( $this->item_name ) ) );
-		$this->version        = $_version;
-		$this->license        = isset( $kvp_options[ $this->item_shortname . '_license_key' ] ) ? trim( $kvp_options[ $this->item_shortname . '_license_key' ] ) : '';
-		$this->author         = $_author;
-		$this->api_url        = is_null( $_api_url ) ? $this->api_url : $_api_url;
+		$this->file         = $_file;
+		$this->item_name    = $_item_name;
+		$this->item_slug	= 'kvp_' . preg_replace( '/[^a-zA-Z0-9_\s]/', '', str_replace( ' ', '_', strtolower( $this->item_name ) ) );
+		$this->version      = $_version;
+		$this->license      = isset( $kvp_options[ $this->item_slug . '_license_key' ] ) ? trim( $kvp_options[ $this->item_slug . '_license_key' ] ) : '';
+		$this->author       = $_author;
+		$this->api_url      = is_null( $_api_url ) ? $this->api_url : $_api_url;
 
 		// Setup hooks
 		$this->includes();
@@ -34,7 +89,7 @@ class KVP_License {
 	 * @return  void
 	 */
 	private function includes() {
-		if ( ! class_exists( 'EDD_Plugin_Updater' ) ) require_once KVP__PLUGIN_DIR . 'lib/EDD_SL_Plugin_Updater.php';
+		if ( ! class_exists( 'EDD_Plugin_Updater' ) ) require_once plugin_dir_path( dirname( __FILE__ ) ) . 'inc/class-edd-sl-plugin-updater.php';
 	}
 
 	/**
@@ -86,11 +141,11 @@ class KVP_License {
 	public function settings( $settings ) {
 		$kvp_license_settings = array(
 			array(
-				'id'      => $this->item_shortname . '_license_key',
+				'id'      => $this->item_slug . '_license_key',
 				'name'    => sprintf( __( '%1$s License Key', 'kvp' ), $this->item_name ),
 				'desc'    => '',
 				'type'    => 'license_key',
-				'options' => array( 'is_valid_license_option' => $this->item_shortname . '_license_active' ),
+				'options' => array( 'is_valid_license_option' => $this->item_slug . '_license_active' ),
 				'size'    => 'regular'
 			)
 		);
@@ -109,13 +164,13 @@ class KVP_License {
 		if ( ! isset( $_POST['kvp_settings_licenses'] ) )
 			return;
 
-		if ( ! isset( $_POST['kvp_settings_licenses'][ $this->item_shortname . '_license_key' ] ) )
+		if ( ! isset( $_POST['kvp_settings_licenses'][ $this->item_slug . '_license_key' ] ) )
 			return;
 
-		if ( 'valid' == get_option( $this->item_shortname . '_license_active' ) )
+		if ( 'valid' == get_option( $this->item_slug . '_license_active' ) )
 			return;
 
-		$license = sanitize_text_field( $_POST['kvp_settings_licenses'][ $this->item_shortname . '_license_key' ] );
+		$license = sanitize_text_field( $_POST['kvp_settings_licenses'][ $this->item_slug . '_license_key' ] );
 
 		// Data to send to the API
 		$api_params = array(
@@ -142,7 +197,7 @@ class KVP_License {
 		// Decode license data
 		$license_data = json_decode( wp_remote_retrieve_body( $response ) );
 
-		update_option( $this->item_shortname . '_license_active', $license_data->license );
+		update_option( $this->item_slug . '_license_active', $license_data->license );
 	}
 
 
@@ -156,13 +211,13 @@ class KVP_License {
 		if ( ! isset( $_POST['kvp_settings_licenses'] ) )
 			return;
 
-		if ( ! isset( $_POST['kvp_settings_licenses'][ $this->item_shortname . '_license_key' ] ) )
+		if ( ! isset( $_POST['kvp_settings_licenses'][ $this->item_slug . '_license_key' ] ) )
 			return;
 
 		// Run on deactivate button press
-		if ( isset( $_POST[ $this->item_shortname . '_license_key_deactivate' ] ) ) {
+		if ( isset( $_POST[ $this->item_slug . '_license_key_deactivate' ] ) ) {
 			// Run a quick security check
-			if ( check_admin_referer( $this->item_shortname . '_license_key_nonce', $this->item_shortname . '_license_key_nonce' ) )
+			if ( check_admin_referer( $this->item_slug . '_license_key_nonce', $this->item_slug . '_license_key_nonce' ) )
 				return;
 
 			// Data to send to the API
@@ -190,7 +245,7 @@ class KVP_License {
 			$license_data = json_decode( wp_remote_retrieve_body( $response ) );
 
 			if ( $license_data->license == 'deactivated' )
-				delete_option( $this->item_shortname . '_license_active' );
+				delete_option( $this->item_slug . '_license_active' );
 		}
 	}
 }

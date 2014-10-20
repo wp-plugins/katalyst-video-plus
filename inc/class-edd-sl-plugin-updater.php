@@ -7,13 +7,14 @@
  * Allows plugins to use their own update API.
  *
  * @author Pippin Williamson
- * @version 1.1
+ * @version 1.2
  */
 class EDD_SL_Plugin_Updater {
 	private $api_url  = '';
 	private $api_data = array();
 	private $name     = '';
 	private $slug     = '';
+	private $do_check = false;
 
 	/**
 	 * Class constructor.
@@ -65,16 +66,23 @@ class EDD_SL_Plugin_Updater {
 	 */
 	function pre_set_site_transient_update_plugins_filter( $_transient_data ) {
 
+		if( empty( $_transient_data ) || ! $this->do_check ) {
 
-		if( empty( $_transient_data ) ) return $_transient_data;
+			// This ensures that the custom API request only runs on the second time that WP fires the update check
+			$this->do_check = true;
+
+			return $_transient_data;
+		}
 
 		$to_send = array( 'slug' => $this->slug );
 
 		$api_response = $this->api_request( 'plugin_latest_version', $to_send );
 
 		if( false !== $api_response && is_object( $api_response ) && isset( $api_response->new_version ) ) {
-			if( version_compare( $this->version, $api_response->new_version, '<' ) )
+
+			if( version_compare( $this->version, $api_response->new_version, '<' ) ) {
 				$_transient_data->response[$this->name] = $api_response;
+			}
 		}
 		return $_transient_data;
 	}
