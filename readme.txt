@@ -23,7 +23,7 @@ Katalyst Video Plus has free and premium extensions to expand functionality. All
 **More Information**
 Visit the Katalyst Video Plus website for more information on [Katalyst Videos Plus](http://katalystvideoplus.com/ "Katalyst Videos Plus").
 
-Must be used with KVP provider plugins to interact with hosting providers.
+Must be used with KVP service bridge plugins to interact with hosting services.
 
 == Installation ==
 
@@ -33,7 +33,6 @@ e.g.
 
 1. Upload `katalyst-video-plus` folder to the `/wp-content/plugins/` directory
 2. Activate the plugin through the 'Plugins' menu in WordPress
-3. Upload and activate Provider plugins.
 
 == Frequently Asked Questions ==
 
