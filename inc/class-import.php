@@ -314,10 +314,7 @@ class Katalyst_Video_Plus_Import {
 		$featured			= get_post_meta( $post_id, '_thumbnail_id', true );
 		$video_thumb		= apply_filters( 'kvp_' . $post_meta['service'] . '_post_thumbnail', null, $video_info );
 		
-		$featured_md5		= ( !empty($featured) ) ? md5( file_get_contents( wp_get_attachment_url($featured) ) ) : null;
-		$video_thumb_md5	= ( !empty($video_thumb) ) ? md5( file_get_contents($video_thumb) ) : null;
-		
-		if( empty($video_thumb) || ( !empty($video_thumb_md5) && $featured_md5 === $video_thumb_md5 ) )
+		if( empty($video_thumb) || !empty($featured) )
 			return true;
 		
 		if( kvp_in_test_mode() )

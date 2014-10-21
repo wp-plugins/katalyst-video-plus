@@ -4,7 +4,7 @@ Donate link: http://keisermedia.com/projects/katalyst-video-plus/
 Tags: import, audit, youtube, thumbnail, twitch, vimeo, ustream, 
 Requires at least: 3.5
 Tested up to: 4.0.0
-Stable tag: 2.0.0
+Stable tag: 2.0.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -51,6 +51,10 @@ By default, authorship can only be attributed to users with the 'author' role or
 4. Action Log
 
 == Changelog ==
+
+= 2.0.1 =
+* [Changed] Image only imports if the featured image is not set.
+* [Fixed] Thumbnail display in archives.
 
 = 2.0.0 =
 * [Added] Dashboard featuring statistics with a force import and force audit option.

@@ -105,7 +105,7 @@ class Katalyst_Video_Plus_Public {
 		$settings	= get_option( 'kvp_settings' );
 		$post_meta	= get_post_meta( get_the_ID(), '_kvp', true );
 		
-		if( empty($post_meta['service']) || empty($post_meta['video_id']) || get_post_type() !== 'post' || ( !is_single() ) && !isset($settings['show_video_in_lists']) && ( !isset($settings['import_post_format']) || ( isset($settings['import_post_format']) && 'standard' === $settings['import_post_format'] ) ) )
+		if( empty($post_meta['service']) || empty($post_meta['video_id']) || get_post_type() !== 'post' || ( !is_single() && !isset($settings['show_video_in_lists']) ) )
 			return $content;
 		
 		if( !isset($settings['show_video_in_lists']) && has_post_thumbnail() && !is_single() )
@@ -171,7 +171,7 @@ class Katalyst_Video_Plus_Public {
  			}
  		}
  		
- 		$set_size = apply_filters('post_thumbnail_size', 'post-thumbnail');
+ 		$set_size = apply_filters( 'post_thumbnail_size', 'post-thumbnail' );
  		
  		if( isset($sizes[$set_size]) && is_array($sizes[$set_size]) )
  			return $sizes[$set_size];
