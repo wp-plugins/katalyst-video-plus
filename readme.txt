@@ -23,7 +23,7 @@ Katalyst Video Plus has free and premium extensions to expand functionality. All
 **More Information**
 Visit the Katalyst Video Plus website for more information on [Katalyst Videos Plus](http://katalystvideoplus.com/ "Katalyst Videos Plus").
 
-Must be used with KVP service brigade plugins to interact with hosting services.
+Must be used with KVP service bridge plugins to interact with hosting services.
 
 == Installation ==
 
