@@ -26,8 +26,9 @@ class KVP_YouTube_Basic_Client extends Katalyst_Video_Plus_Client {
 	 */
 	public function __construct( $account ) {
 		
-		$this->api_url = 'https://www.googleapis.com/youtube/v3';
-		$this->account = $account;
+		$this->api_url	= 'https://www.googleapis.com/youtube/v3';
+		$this->account	= $account;
+		$this->limit	= 50;
 		
 		if( isset($account['developer_key']) )
 			$this->developer_key = $account['developer_key'];
@@ -48,9 +49,9 @@ class KVP_YouTube_Basic_Client extends Katalyst_Video_Plus_Client {
 			
 		}
 		
-		if( $resource == 'playlistItems' && isset($query['uploads_id']) ) {
+		if( $resource == 'playlistItems' && isset($query['playlist_id']) ) {
 			
-			$url_query = sprintf( '%s/playlistItems?maxresults=%s&playlistId=%s&part=contentDetails&key=%s', $this->api_url, $this->limit, $query['uploads_id'], $this->developer_key );
+			$url_query = sprintf( '%s/playlistItems?maxresults=%s&playlistId=%s&part=contentDetails&key=%s', $this->api_url, $this->limit, $query['playlist_id'], $this->developer_key );
 			
 			if( isset($query['page_token']) && !empty($query['page_token']) )
 				$url_query .= '&pageToken=' . $query['page_token'];
@@ -112,7 +113,7 @@ class KVP_YouTube_Basic_Client extends Katalyst_Video_Plus_Client {
 		if( !isset($channel_response['pageInfo']['totalResults']) || 0 == $channel_response['pageInfo']['totalResults'] )
 			return false;
 		
-		$playlist_params['uploads_id']	= $channel_response['items'][0]['contentDetails']['relatedPlaylists']['uploads'];
+		$playlist_params['playlist_id']	= $channel_response['items'][0]['contentDetails']['relatedPlaylists']['uploads'];
 		$playlist_params['page_token']	= null;
 		
 		$video_ids = array();
@@ -126,10 +127,9 @@ class KVP_YouTube_Basic_Client extends Katalyst_Video_Plus_Client {
 				return $playlist_response;
 			
 			foreach( $playlist_response['items'] as $item ) {
-				//echo '<pre>';
-				//print_r($item);
-				//echo '</pre>';
+				
 				$video_ids[] = $item['contentDetails']['videoId'];
+				
 			}
 			
 			if( isset($playlist_response['nextPageToken']) )

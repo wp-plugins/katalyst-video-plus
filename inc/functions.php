@@ -56,6 +56,7 @@ function kvp_in_test_mode() {
  * @since 2.0.0
  */
 function kvp_purge_cron() {
+	
 	$crons = get_option('cron');
 	
 	foreach( $crons as $timestamp => $hooks ) {

@@ -41,6 +41,9 @@ class Katalyst_Video_Plus_Upgrade {
 		if( version_compare( $this->installed_version, $this->plugin_version, '<') )
 			$this->_1_0_0_to_2_0_0();
 		
+		if( !version_compare( $this->installed_version, $this->plugin_version, '==') )
+			update_option( 'kvp_version', $this->plugin_version );
+		
 	}
 	
 	/**
@@ -139,9 +142,6 @@ class Katalyst_Video_Plus_Upgrade {
 			update_post_meta( $post_meta['post_id'], '_kvp', $post_meta );
 			
 		}
-		
-		// Adds kvp_version to options
-		update_option( 'kvp_version', '2.0.0' );
 		
 	}
 	

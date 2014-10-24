@@ -73,6 +73,7 @@ class Katalyst_Video_Plus_Public {
 		wp_enqueue_script( $this->slug, plugin_dir_url( dirname( __FILE__ ) ) . 'assets/js/kvp.js', array( 'jquery' ), $this->version, false );
 
 	}
+	
 	/**
 	 * Audit current KVP page
 	 * 
