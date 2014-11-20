@@ -40,7 +40,7 @@ class KVP_YouTube_Basic_Client extends Katalyst_Video_Plus_Client {
 	 * 
 	 * @since 2.0.0
 	 */
-	protected function create_url( $query, $resource = 'channels' ) {
+	protected function create_url( $query, $resource = 'channels', $endpoint = null ) {
 		
 		if( $resource == 'channels' ) {
 			

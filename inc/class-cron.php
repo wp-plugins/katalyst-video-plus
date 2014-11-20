@@ -8,6 +8,7 @@
 * @subpackage Katalyst_Video_Plus/inc
 * @author     Keiser Media <support@keisermedia.com>
 */
+
 class Katalyst_Video_Plus_CRON {
 	
 	/**

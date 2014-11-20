@@ -42,7 +42,7 @@ abstract class Katalyst_Video_Plus_Client {
 	 * 
 	 * @since 2.0.0
 	 */
-	abstract protected function create_url( $query, $resource );
+	abstract protected function create_url( $query, $resource, $endpoint );
 	
 	/**
 	 * Fetches the url and returns the json as an array

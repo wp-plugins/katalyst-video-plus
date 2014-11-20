@@ -46,7 +46,7 @@ class KVP_Accounts_Table extends WP_List_Table {
             'status'		=> __( 'Status', 'kvp' ),
         );
         
-        return $columns;
+        return apply_filters( 'manage_kvp_account_columns', $columns );
 		
 	}
 	
@@ -134,7 +134,8 @@ class KVP_Accounts_Table extends WP_List_Table {
             	return $service->check_status();
             
             default:
-                return print_r($item, true);
+            	do_action( 'manage_kvp_account_custom_column', $column_name, $item );
+                return;
         }
 
     }
@@ -180,6 +181,10 @@ class KVP_Accounts_Table extends WP_List_Table {
 		}
 		
 		$inline .= '	<div class="category" id="category_' . $item['ID'] . '">' . implode( ',', $item['categories'] ) . '</div>';
+		
+		$ext_status = isset($item['ext_status']) ? $item['ext_status'] : array( 'video' => 'active' );
+		
+		$inline .= '	<div class="ext_status">' . json_encode( $ext_status ) . '</div>';
 		
 	    //$inline .= '    <div class="title_filter">' . $item['title_filter'] . '</div>\r\n';
 	    //$inline .= '    <div class="content_filter">' . $item['content_filter'] . '</div>\r\n';
@@ -261,9 +266,9 @@ class KVP_Accounts_Table extends WP_List_Table {
 			wp_die( __( 'You are not allowed to edit this account.', 'kvp' ) );
 		
 		$status = $this->process_account();
-		echo $status;
+		
 		if( true !== $status )
-			wp_die( __( 'There was an error saving the account.', 'kvp' ) );
+			wp_die( __( 'There was an error saving the account.' . $status, 'kvp' ) );
 		
 		$this->items = get_option( 'kvp_accounts' );
 		$this->single_row( $this->items[$_POST['ID']] );
@@ -288,11 +293,12 @@ class KVP_Accounts_Table extends WP_List_Table {
 		
 		$account = ( isset($_POST['new_account']) ) ? array_merge( array( 'ID' => uniqid() ), $_POST['new_account'] ) : array_merge( array( 'ID' => $_POST['ID'] ), $_POST['edit_account'] );
 		$account['categories'] = $_POST['post_category'];
+		$account['ext_status'] = ( isset($_POST['ext_status']) ) ? $_POST['ext_status'] : array( 'video' => 'active' );
 		$account['developer_key'] = isset($account['developer_key']) ? $account['developer_key'] : '';
 		
 		if( 0 < count($account['categories']) )
 			unset($account['categories'][0]);
-		
+			
 		foreach( $this->items as $key => $values ) {
 
 			if( isset($account['service']) ) {
@@ -319,6 +325,8 @@ class KVP_Accounts_Table extends WP_List_Table {
 			unset($account['oauth_id']);
 			unset($account['oauth_secret']);
 		}
+		
+		$account = apply_filters( 'kvp_account_save', $account );
 		
 		if( !isset($accounts[$account['ID']]) )
 			$accounts[$account['ID']] = array();

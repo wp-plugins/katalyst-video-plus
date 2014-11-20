@@ -98,9 +98,25 @@ $core_columns = array( 'cb' => true, 'date' => true, 'title' => true, 'categorie
         </div></fieldset>
 
 <?php endif; // count( $hierarchical_taxonomies ) ?>
-<!--
-        <fieldset class="inline-edit-col-right"><div class="inline-edit-col">
 
+        <fieldset class="inline-edit-col-right"><div class="inline-edit-col">
+            <div class="inline-edit-group">
+            <?php
+            $extension_status = apply_filters( 'kvp_accounts_extension_status', array( 'video' => __( 'Import Videos', 'kvp' ) ) );
+            
+            if( count($extension_status) > 1 ) :
+                foreach( $extension_status as $ext => $title ) : ?>
+                <label class="alignleft">
+                    <input type="checkbox" name="ext_status[<?php echo $ext; ?>]" value="active">
+                    <span class="checkbox-title"><?php echo $title; ?></span>
+                </label>
+            <?php
+                endforeach;
+            endif;
+            ?>    
+            
+            </div>
+                <!--
                 <label class="inline-title-filter">
                     <span class="title"><?php _e('Title Filter', 'kvp'); ?></span>
                     <textarea cols="22" rows="1" name="edit_account[title_filter]" class="title_filter"></textarea>
@@ -118,13 +134,12 @@ $core_columns = array( 'cb' => true, 'date' => true, 'title' => true, 'categorie
                 <div class="inline-edit-group">
                 	<label class="inline-edit-status alignleft">
                     </label>
-                </div>
+                </div> -->
 
-        </div></fieldset> -->
+        </div></fieldset>
 
 <?php
-        list( $columns ) = $this->get_column_info();
-
+        list( $columns ) = $this->get_column_info();  
         foreach ( $columns as $column_name => $column_display_name ) {
                 if ( isset( $core_columns[$column_name] ) )
                         continue;

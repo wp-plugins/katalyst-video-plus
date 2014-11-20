@@ -245,7 +245,7 @@ class Katalyst_Video_Plus_Settings {
 	 */
 	public function header_callback( $args ) {
 		
-		echo '';
+		echo '<hr />';
 		
 	}
 	

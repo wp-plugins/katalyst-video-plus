@@ -17,11 +17,11 @@ $tabs['general'] = __( 'General', 'kvp' );
 $tabs['display'] = __( 'Display', 'kvp' );
 $tabs['import']	 = __( 'Audit & Import', 'kvp' );
 
-if( false == apply_filters( 'kvp_settings_extensions', array() ) ) {
+if( false != apply_filters( 'kvp_settings_extensions', array() ) ) {
 	$tabs['extensions'] = __( 'Extensions', 'kvp' );
 }
 
-if( false == apply_filters( 'kvp_settings_licenses', array() ) ) {
+if( false != apply_filters( 'kvp_settings_licenses', array() ) ) {
 	$tabs['licenses'] = __( 'Licenses', 'edd' );
 }
 

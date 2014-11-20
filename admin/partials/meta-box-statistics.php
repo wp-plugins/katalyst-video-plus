@@ -77,6 +77,9 @@ foreach( $posts_meta as $post_meta ) {
 	
 	++$services[$post_meta['service']]['value'];
 	
+	if( !isset($accounts[$post_meta['account']]) )
+		continue;
+	
 	if( !isset($authors[$accounts[$post_meta['account']]['author']]['author']) )
 		$authors[$accounts[$post_meta['account']]['author']]['author'] = $accounts[$post_meta['account']]['author'];
 	

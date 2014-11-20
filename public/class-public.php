@@ -112,7 +112,6 @@ class Katalyst_Video_Plus_Public {
 		if( !isset($settings['show_video_in_lists']) && has_post_thumbnail() && !is_single() )
 			return the_post_thumbnail();
 		
-		$format = apply_filters( 'kvp_' . $post_meta['service'] . '_video_embed', '', $post_meta);
 		$size	= $this->get_thumbnail_size();
 		
 		$atts = array(

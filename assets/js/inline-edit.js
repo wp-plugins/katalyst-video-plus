@@ -76,10 +76,19 @@ inlineEditAccount = {
 		if ( $( ':input[name="edit_account[author]"] option', editRow ).length === 1 ) {
 			$('label.inline-edit-author', editRow).hide();
 		}
-
+		
 		for ( f = 0; f < fields.length; f++ ) {
 			$(':input[name="edit_account[' + fields[f] + ']"]', editRow).val( $('.'+fields[f], rowData).text() );
 		}
+		
+		ext_status = $.parseJSON( $('.ext_status', rowData ).text() );
+		
+		$.each( ext_status, function( key, value ) {
+			
+			if( 'active' === value )
+				$( ':input[name="ext_status[' + key + ']"]', editRow ).prop( 'checked', true );
+			
+		});
 
 		// hierarchical taxonomies
 		$('.category', rowData).each(function(){

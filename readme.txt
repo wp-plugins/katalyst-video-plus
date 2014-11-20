@@ -4,7 +4,7 @@ Donate link: http://keisermedia.com/projects/katalyst-video-plus/
 Tags: import, audit, youtube, thumbnail, twitch, vimeo, ustream, 
 Requires at least: 3.5
 Tested up to: 4.0.0
-Stable tag: 2.0.2
+Stable tag: 2.0.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -51,7 +51,13 @@ By default, authorship can only be attributed to users with the 'author' role or
 
 == Changelog ==
 
-= 2.1.0 =
+= 2.0.3 =
+* [Added] Options to include and exclude accounts in actions (Video importing included by default).
+* [Changed] Actions and filters added to account editor.
+* [Fixed] Settings not showing tabs properly.
+* [Removed] Code redundency in video embed.
+
+= 2.0.2 =
 * [Changed] YouTube Basic api item limit increased to 50.
 * [Changed] YouTube Basic playlist id identifier.
 * [Fixed] Upgrade code running every page load.

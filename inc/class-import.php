@@ -141,6 +141,9 @@ class Katalyst_Video_Plus_Import {
 		
 		foreach( $this->queue as $key => $item ) {
 			
+			if( !isset($this->accounts[$item['account']]['ext_status']) || !isset($this->accounts[$item['account']]['ext_status']['video']) || 'active' != $this->accounts[$item['account']]['ext_status']['video'] )
+				continue;
+				
 			if( false === $audit )
 				set_transient( 'kvp_import_lock', 'locked', ( 5 * 60 ) );
 			

@@ -38,8 +38,11 @@ class Katalyst_Video_Plus_Upgrade {
 		$this->plugin_version = $plugin_version;
 		$this->installed_version = get_option( 'kvp_version', '0.0.0' );
 		
-		if( version_compare( $this->installed_version, $this->plugin_version, '<') )
+		if( version_compare( $this->installed_version, '2.0.0', '<') )
 			$this->_1_0_0_to_2_0_0();
+		
+		if( version_compare( $this->installed_version, '2.0.3', '<') )
+			$this->_2_0_0_to_2_0_3();
 		
 		if( !version_compare( $this->installed_version, $this->plugin_version, '==') )
 			update_option( 'kvp_version', $this->plugin_version );
@@ -142,6 +145,26 @@ class Katalyst_Video_Plus_Upgrade {
 			update_post_meta( $post_meta['post_id'], '_kvp', $post_meta );
 			
 		}
+		
+	}
+	
+	/**
+	 * Upgrades from 2.0.0 to 2.0.3
+	 * 
+	 * @since 2.0.0
+	 */
+	private function _2_0_0_to_2_0_3() {
+		
+		$accounts = get_option( 'kvp_accounts', array() );
+		
+		foreach( $accounts as $id => $account ) {
+			
+			if( !isset($account['ext_status']) )
+				$accounts[$id]['ext_status'] = array( 'video' => 'active' );
+			
+		}
+		
+		update_option( 'kvp_accounts', $accounts );
 		
 	}
 	
