@@ -3,7 +3,7 @@ Contributors: Keiser Media
 Donate link: http://keisermedia.com/projects/katalyst-video-plus/
 Tags: import, audit, youtube, thumbnail, twitch, vimeo, ustream, 
 Requires at least: 3.5
-Tested up to: 4.0.0
+Tested up to: 4.0.1
 Stable tag: 2.0.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
