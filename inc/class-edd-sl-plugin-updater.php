@@ -1,4 +1,13 @@
-<?php
+<?php if( ! defined('ABSPATH') ) { header('Status: 403 Forbidden'); header('HTTP/1.1 403 Forbidden'); exit(); }
+/**
+* Provides a class for premium dependency (child) plugins to check for recent updates.
+*
+* @link       http://katalystvideoplus.com
+* @since      2.0.0
+* @package    Katalyst_Video_Plus
+* @subpackage Katalyst_Video_Plus/inc
+* @author     Keiser Media <support@keisermedia.com>
+*/
 
 // uncomment this line for testing
 //set_site_transient( 'update_plugins', null );
