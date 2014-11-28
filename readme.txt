@@ -4,7 +4,7 @@ Donate link: http://keisermedia.com/projects/katalyst-video-plus/
 Tags: import, audit, youtube, thumbnail, twitch, vimeo, ustream, 
 Requires at least: 3.5
 Tested up to: 4.0.1
-Stable tag: 2.0.5
+Stable tag: 2.0.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -50,9 +50,6 @@ By default, authorship can only be attributed to users with the 'author' role or
 4. Action Log
 
 == Changelog ==
-
-= 2.0.5 (Nov. 28, 2014) =
-* [Fixed] Queue looping issu5
 
 = 2.0.4 =
 * [Changed] Descriptions for premium extension automated updates.
