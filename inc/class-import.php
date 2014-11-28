@@ -141,8 +141,14 @@ class Katalyst_Video_Plus_Import {
 		
 		foreach( $this->queue as $key => $item ) {
 			
-			if( !isset($this->accounts[$item['account']]['ext_status']) || !isset($this->accounts[$item['account']]['ext_status']['video']) || 'active' != $this->accounts[$item['account']]['ext_status']['video'] )
+			if( !isset($this->accounts[$item['account']]['ext_status']) || !isset($this->accounts[$item['account']]['ext_status']['video']) || 'active' != $this->accounts[$item['account']]['ext_status']['video'] ) {
+				unset( $this->queue[$key] );
+				
+				if( !kvp_in_test_mode() )
+					update_option( 'kvp_queue', $this->queue );
+				
 				continue;
+			}
 				
 			if( false === $audit )
 				set_transient( 'kvp_import_lock', 'locked', ( 5 * 60 ) );
@@ -217,6 +223,9 @@ class Katalyst_Video_Plus_Import {
 		if( empty($this->queue) ) {
 			
 			foreach ( $this->accounts as $id => $info ) {
+				
+				if( !isset($info['ext_status']) || !isset($info['ext_status']['video']) || 'active' != $info['ext_status']['video'] )
+					continue;
 				
 				$service	= 'KVP_' . str_replace( ' ', '_', $this->services[$info['service']]['label']) . '_Client';
 				
