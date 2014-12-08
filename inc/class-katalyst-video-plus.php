@@ -170,8 +170,8 @@ class Katalyst_Video_Plus {
 
 		$this->loader->add_action( 'wp_enqueue_scripts', $katalyst_video_plus_public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $katalyst_video_plus_public, 'enqueue_scripts' );
-		$this->loader->add_action( 'post_thumbnail_html', $katalyst_video_plus_public, 'post_thumbnail_html' );
 		$this->loader->add_action( 'wp', $katalyst_video_plus_public, 'audit_single' );
+		$this->loader->add_action( 'post_thumbnail_html', $katalyst_video_plus_public, 'post_thumbnail_html', 10, 5 );
 		$this->loader->add_action( 'the_content', $katalyst_video_plus_public, 'the_content' );
 
 	}
@@ -196,7 +196,7 @@ class Katalyst_Video_Plus {
 	private function setup_CRON() {
 		
 		$katalyst_video_plus_CRON = new Katalyst_Video_Plus_CRON();
-//$katalyst_video_plus_CRON->audit_event();
+		
 		$this->loader->add_action( 'init', $katalyst_video_plus_CRON, 'setup_cron' );
 		$this->loader->add_action( 'kvp_import_cron', $katalyst_video_plus_CRON, 'import_event' );
 		$this->loader->add_action( 'kvp_audit_cron', $katalyst_video_plus_CRON, 'audit_event' );

@@ -4,7 +4,7 @@ Donate link: http://keisermedia.com/projects/katalyst-video-plus/
 Tags: import, audit, youtube, thumbnail, twitch, vimeo, ustream, 
 Requires at least: 3.5
 Tested up to: 4.0.1
-Stable tag: 2.0.5
+Stable tag: 2.1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -27,10 +27,6 @@ Must be used with KVP service bridge plugins to interact with hosting services.
 
 == Installation ==
 
-This section describes how to install the plugin and get it working.
-
-e.g.
-
 1. Upload `katalyst-video-plus` folder to the `/wp-content/plugins/` directory
 2. Activate the plugin through the 'Plugins' menu in WordPress
 
@@ -51,8 +47,19 @@ By default, authorship can only be attributed to users with the 'author' role or
 
 == Changelog ==
 
+= 2.1.0 (Dec. 8, 2014) =
+* [Added] Change import post format.
+* [Added] YouTube API Fallback option.
+* [Added] Menu notification for errors with account connections.
+* [Changed] Made improvements on how the video embed displays and interacts with post thumbnails and the content.
+* [Changed] Duplicate post check only occurs on full audits.
+* [Fixed] Imported images show import author.
+* [Fixed] Inactive service errors in Accounts.
+* [Fixed] Inactive service errors and display in Dashboard.
+* [Fixed] Precautionary checks for connection status.
+
 = 2.0.5 (Nov. 28, 2014) =
-* [Fixed] Queue looping issu5
+* [Fixed] Queue looping issue.
 
 = 2.0.4 =
 * [Changed] Descriptions for premium extension automated updates.

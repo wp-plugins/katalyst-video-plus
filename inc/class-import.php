@@ -77,26 +77,30 @@ class Katalyst_Video_Plus_Import {
 			if( false === get_post_status($audit_meta['post_id']) )
 				continue;
 			
-			foreach( $posts_meta as $key => $post_meta ) {
+			if( false === $single ) {
 				
-				if( $post_meta['post_id'] != $audit_meta['post_id'] && $post_meta['video_id'] == $audit_meta['video_id'] && $post_meta['service'] == $audit_meta['service'] ) {
+				foreach( $posts_meta as $key => $post_meta ) {
 					
-					if( $audit_meta['post_id'] < $post_meta['post_id'] ) {
+					if( $post_meta['post_id'] != $audit_meta['post_id'] && $post_meta['video_id'] == $audit_meta['video_id'] && $post_meta['service'] == $audit_meta['service'] ) {
 						
-						$success = wp_delete_post( $post_meta['post_id'], true );
+						if( $audit_meta['post_id'] < $post_meta['post_id'] ) {
+							
+							$success = wp_delete_post( $post_meta['post_id'], true );
+							
+							if( false === $success ) 
+								kvp_action_log( __( 'Failure to Delete Post', 'kvp' ), __( 'Post ID: ', 'kvp' ) . $post_meta['post_id'], __( 'Core Import', 'kvp' ) );
+							
+							else
+								kvp_action_log( __( 'Deleted Duplicate Post', 'kvp' ), __( 'Post ID: ', 'kvp' ) . $post_meta['post_id'], __( 'Core Import', 'kvp' ) );
+							
+						} else {
+							kvp_action_log( __( 'Match IDs Skip', 'kvp' ), $audit_meta['post_id'] . ': ' . $post_meta['post_id'], __( 'Core Import', 'kvp' ) );
+							continue 2;
+							
+						}
 						
-						if( false === $success ) 
-							kvp_action_log( __( 'Failure to Delete Post', 'kvp' ), __( 'Post ID: ', 'kvp' ) . $post_meta['post_id'], __( 'Core Import', 'kvp' ) );
-						
-						else
-							kvp_action_log( __( 'Deleted Duplicate Post', 'kvp' ), __( 'Post ID: ', 'kvp' ) . $post_meta['post_id'], __( 'Core Import', 'kvp' ) );
-						
-					} else {
-						kvp_action_log( __( 'Match IDs Skip', 'kvp' ), $audit_meta['post_id'] . ': ' . $post_meta['post_id'], __( 'Core Import', 'kvp' ) );
-						continue 2;
 						
 					}
-					
 					
 				}
 				
@@ -310,6 +314,9 @@ class Katalyst_Video_Plus_Import {
 		
 		$post_id = wp_insert_post( $post );
 		
+		if( isset($this->settings['import_post_format']) )
+			set_post_format( $post['ID'], $this->settings['import_post_format'] );
+		
 		update_post_meta( $post_id, '_kvp', array( 'post_id' => $post_id, 'video_id' => $item['video_id'], 'account' => $account['ID'],  'service' => $account['service'], 'username' => $account['username'], 'last_audit' => time() ) );
 		
 		return $post_id;
@@ -341,6 +348,7 @@ class Katalyst_Video_Plus_Import {
 			'upload_date'	=> $post->post_date,
 			'post_date'		=> $post->post_date,
 			'post_date_gmt'	=> $post->post_date,
+			'post_author'	=> $post->post_author,
 		);
 		
 		$attach_id = $this->process_attachment( $attachment, $video_thumb );

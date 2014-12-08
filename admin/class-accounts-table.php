@@ -129,9 +129,19 @@ class KVP_Accounts_Table extends WP_List_Table {
 				return join( __( ', ' ), $output );
             
             case 'status':
-            	$service = 'KVP_' . str_replace( ' ', '_', $this->services[$item['service']]['label']) . '_Client';
-            	$service = new $service( $item );
-            	return $service->check_status();
+            	
+            	if( isset($this->services[$item['service']]) ) {
+	            	
+	            	$service = 'KVP_' . str_replace( ' ', '_', $this->services[$item['service']]['label']) . '_Client';
+	            	
+	            	if( class_exists($service) ) {
+	            		$service = new $service( $item );
+	            		return $service->check_status();
+	            	}
+	            
+	            }
+	            
+            	return __( 'Service Not Active', 'kvp' );
             
             default:
             	do_action( 'manage_kvp_account_custom_column', $column_name, $item );

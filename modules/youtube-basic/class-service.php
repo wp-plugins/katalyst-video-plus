@@ -19,6 +19,7 @@ class KVP_YouTube_Basic_Service extends Katalyst_Video_Plus_Service {
 		
 		parent::__construct( 'youtube' );
 		add_filter( 'kvp_youtube_post_thumbnail', array( $this, 'post_thumbnail' ), 10, 2 );
+		add_filter( 'kvp_settings_misc', array( $this, 'add_settings' ) );
 		
 	}
 	
@@ -112,6 +113,31 @@ class KVP_YouTube_Basic_Service extends Katalyst_Video_Plus_Service {
 		), $atts ) );
 		
 		return '<iframe id="ytplayer-' . $username . '" type="text/html" width="' . $width . '" height="' . $height . '" src="http://www.youtube.com/embed/' . $video_id . '?origin=' . get_site_url() . '" frameborder="0"></iframe>';
+		
+	}
+	
+	/**
+	 * Adds settings to misc
+	 * 
+	 * @since 2.1.0
+	 * @return string post date
+	 */
+	public function add_settings( $settings ) {
+		
+		$settings['youtube_basic_header'] = array(
+			'id'	=> 'youtube_basic_header',
+			'name'	=> __( 'YouTube Basic', 'kvp' ),
+			'type'	=> 'header',
+		);
+		
+		$settings['youtube_api_fallback'] = array(
+			'id'	=> 'youtube_api_fallback',
+			'name'	=> __( 'YouTube API Key Fallback', 'kvp' ),
+			'desc'	=> __( 'If a YouTube account has issues with its API, this API will be used to prevent an interruption of service.', 'kvp' ),
+			'type'	=> 'text',
+		);
+		
+		return $settings;
 		
 	}
 	

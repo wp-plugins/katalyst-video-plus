@@ -110,8 +110,8 @@ class Katalyst_Video_Plus_Admin {
 		
 		$default_submenu = array(
 			array( __( 'Dashboard', 'kvp' ), __( 'Dashboard', 'kvp' ), 'import', $menu_slug, array( $this, 'view_dashboard' ) ),
-			array( __( 'Accounts', 'kvp' ), __( 'Accounts', 'kvp' ), 'import', 'kvp-accounts', array( $this, 'view_accounts' ) ),
-			array( __( 'Log', 'kvp' ), __( 'Log', 'kvp' ), 'import', 'kvp-log', array( $this, 'view_log' ) ),
+			array( __( 'Accounts', 'kvp' ), __( 'Accounts', 'kvp' ) . $this->get_error_count('accounts'), 'import', 'kvp-accounts', array( $this, 'view_accounts' ) ),
+			array( __( 'Log', 'kvp' ), __( 'Log', 'kvp' ) . $this->get_error_count('log'), 'import', 'kvp-log', array( $this, 'view_log' ) ),
 			array( __( 'Settings', 'kvp' ), __( 'Settings', 'kvp' ), 'manage_options', 'kvp-settings', array( $this, 'view_settings' ) ),
 		);
 		
@@ -127,9 +127,38 @@ class Katalyst_Video_Plus_Admin {
 	 *
 	 * @since    2.0.0
 	 */
-	public function get_error_count() {
+	public function get_error_count( $section = false ) {
 		
 		$errors = 0;
+		
+		// Check accounts
+		if( in_array( $section, array( false, 'accounts' ) ) ) {
+			
+			$accounts = get_option( 'kvp_accounts', array() );
+			$services = apply_filters( 'kvp_services', array() );
+			
+			foreach( $accounts as $account ) {
+				
+				if( !isset($services[$account['service']]) ) {
+					++$errors;
+					continue;
+				}
+		        	
+	        	$service = 'KVP_' . str_replace( ' ', '_', $services[$account['service']]['label']) . '_Client';
+	        	
+	        	if( class_exists($service) ) {
+	        		$service = new $service( $account );
+	        		$status = $service->check_status();
+	        		
+	        		if( 'Connected' !== $status ) {
+						++$errors;
+						continue;
+	        		}
+	        	}
+		        
+		    }
+		    
+		}
 		
 		if( 0 == $errors )
 			return;

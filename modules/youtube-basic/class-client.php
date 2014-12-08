@@ -33,6 +33,15 @@ class KVP_YouTube_Basic_Client extends Katalyst_Video_Plus_Client {
 		if( isset($account['developer_key']) )
 			$this->developer_key = $account['developer_key'];
 		
+		if( empty($this->developer_key) ) {
+			
+			$settings = get_option( 'kvp_settings', array() );
+			
+			if( isset($settings['youtube_api_fallback']) )
+				$this->developer_key = $settings['youtube_api_fallback'];
+			
+		}
+		
 	}
 	
 	/**

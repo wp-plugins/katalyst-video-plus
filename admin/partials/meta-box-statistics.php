@@ -12,7 +12,14 @@ global $wpdb;
 
 $accounts	= get_option( 'kvp_accounts', array() );
 
-$services		= apply_filters( 'kvp_services', array() );
+$services['inactive'] = array(
+	'label'		=> __( 'Inactive Service', 'kvp' ),
+	'color'		=> '#34495e',
+	'highlight'	=> '#2c3e50',
+	'value'		=> null
+);
+
+$services		= apply_filters( 'kvp_services', $services );
 $services_data	= array();
 $authors		= array();
 $authors_data	= array(
@@ -75,7 +82,11 @@ foreach( $posts_meta as $post_meta ) {
 	
 	$post_meta = unserialize( $post_meta );
 	
-	++$services[$post_meta['service']]['value'];
+	if( isset($services[$post_meta['service']]['value']) )
+		++$services[$post_meta['service']]['value'];
+	
+	else
+		++$services['inactive']['value'];
 	
 	if( !isset($accounts[$post_meta['account']]) )
 		continue;

@@ -53,6 +53,9 @@ abstract class Katalyst_Video_Plus_Client {
 		
 		$response = (array) wp_remote_get( $url, array( 'timeout' => 5, 'sslverify' => false ) );
 		
+		if( !isset($response['response']) || !isset($response['response']['code']) )
+			return false;
+		
 		if( $check )
 			return $response['response']['code'];
 		

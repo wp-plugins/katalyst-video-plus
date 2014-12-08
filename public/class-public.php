@@ -36,6 +36,15 @@ class Katalyst_Video_Plus_Public {
 	 * @var      string  The current version of this plugin.
 	 */
 	private $version;
+	
+	/**
+	 * The image size name.
+	 *
+	 * @since    2.1.0
+	 * @access   private
+	 * @var      string  Image size.
+	 */
+	private $size = 'post-thumbnail';
 
 	/**
 	 * Initialize the class and set its properties.
@@ -97,22 +106,66 @@ class Katalyst_Video_Plus_Public {
 	}
 	
 	/**
-	 * Filters the_content to display video embed code
+	 * Removes thumbnail from single posts
+	 * 
+	 * @since 2.0.0
+	 */
+	public function post_thumbnail_html( $html, $post_id, $post_thumbnail_id, $size, $attr ) {
+		
+		$settings = get_option( 'kvp_settings', array() );
+		$post_meta = get_post_meta( get_the_ID(), '_kvp', true );
+		
+		if( !empty($post_meta) && !isset($settings['force_video_into_content']) ) {
+			
+			if( is_single() || ( !is_single() && isset($settings['show_video_in_lists']) ) ) {
+				
+				$this->size = $size;
+				
+				if( current_theme_supports('post-thumbnails') )
+					return $this->video_embed();
+				
+			}
+			
+		}
+		
+		return $html;
+		
+	}
+	
+	/**
+	 * Filters the content for adding video embed code
 	 * 
 	 * @since 2.0.0
 	 */
 	public function the_content( $content ) {
 		
+		$settings = get_option( 'kvp_settings', array() );
+		$post_meta = get_post_meta( get_the_ID(), '_kvp', true );
+		
+		if( !empty($post_meta) && is_single() && ( isset($settings['force_video_into_content']) || !current_theme_supports('post-thumbnails') ) ) {
+			
+			return $this->video_embed() . $content;
+			
+		}
+		
+		return $content;
+		
+	}
+	
+	/**
+	 * Renders video embed code
+	 * 
+	 * @since 2.1.0
+	 */
+	private function video_embed() {
+		
 		$settings	= get_option( 'kvp_settings' );
 		$post_meta	= get_post_meta( get_the_ID(), '_kvp', true );
 		
-		if( empty($post_meta['service']) || empty($post_meta['video_id']) || get_post_type() !== 'post' || ( !is_single() && !isset($settings['show_video_in_lists']) ) )
-			return $content;
+		if( empty($post_meta['service']) || empty($post_meta['video_id']) )
+			return '';
 		
-		if( !isset($settings['show_video_in_lists']) && has_post_thumbnail() && !is_single() )
-			return the_post_thumbnail();
-		
-		$size	= $this->get_thumbnail_size();
+		$size = $this->get_thumbnail_size();
 		
 		$atts = array(
 			'video_id'	=> $post_meta['video_id'],
@@ -126,23 +179,7 @@ class Katalyst_Video_Plus_Public {
 		if( !is_single() )
 			return $video_html;
 		
-		return $video_html . $content;
-		
-	}
-	
-	/**
-	 * Removes thumbnail from single posts
-	 * 
-	 * @since 2.0.0
-	 */
-	public function post_thumbnail_html( $html ) {
-		
-		$post_meta = get_post_meta( get_the_ID(), '_kvp', true );
-		
-		if( !empty($post_meta) && is_single() )
-			return '';
-		
-		return $html;
+		return $video_html;
 		
 	}
 	
@@ -171,7 +208,7 @@ class Katalyst_Video_Plus_Public {
  			}
  		}
  		
- 		$set_size = apply_filters( 'post_thumbnail_size', 'post-thumbnail' );
+ 		$set_size = apply_filters( 'post_thumbnail_size', $this->size );
  		
  		if( isset($sizes[$set_size]) && is_array($sizes[$set_size]) )
  			return $sizes[$set_size];

@@ -110,6 +110,13 @@ class Katalyst_Video_Plus_Settings {
 						'type'	=> 'checkbox'
 					),
 					
+					'force_video_into_content' => array(
+						'id'	=> 'force_video_into_content',
+						'name'	=> __( 'Force Video into Content', 'kvp' ),
+						'desc'	=> __( 'If checked, videos will appear at the beginning of content.', 'kvp' ),
+						'type'	=> 'checkbox'
+					),
+					
 				)
 				
 			),
@@ -132,7 +139,7 @@ class Katalyst_Video_Plus_Settings {
 						),
 						'std'	=> 'false',
 					),
-					/*
+					
 					'import_post_format' => array(
 						'id'	=> 'import_post_format',
 						'name'	=> __( 'Import Post Format', 'kvp' ),
@@ -145,24 +152,23 @@ class Katalyst_Video_Plus_Settings {
 							)
 						),
 					),
-					*/
 					
 				)
 				
 			),
 			
 			//Extension Settings
-			'extensions' => apply_filters('kvp_settings_extensions',
+			'extensions' => apply_filters( 'kvp_settings_extensions',
 				array()
 			),
 			
 			//License Settings
-			'licenses' => apply_filters('kvp_settings_licenses',
+			'licenses' => apply_filters( 'kvp_settings_licenses',
 				array()
 			),
 			
 			//Misc Settings
-			'misc' => apply_filters('kvp_settings_misc',
+			'misc' => apply_filters( 'kvp_settings_misc',
 				array()
 			),
 			
