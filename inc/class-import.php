@@ -332,6 +332,7 @@ class Katalyst_Video_Plus_Import {
 			'upload_date'	=> $post->post_date,
 			'post_date'		=> $post->post_date,
 			'post_date_gmt'	=> $post->post_date,
+			'post_author'	=> $post->post_author,
 		);
 		
 		$attach_id = $this->process_attachment( $attachment, $video_thumb );
