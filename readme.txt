@@ -1,29 +1,29 @@
-=== Plugin Name ===
+=== Katalyst Video Plus ===
 Contributors: Keiser Media
 Donate link: http://keisermedia.com/projects/katalyst-video-plus/
 Tags: import, audit, youtube, thumbnail, twitch, vimeo, ustream, 
-Requires at least: 3.5
-Tested up to: 4.0.1
+Requires at least: 3.4
+Tested up to: 4.1
 Stable tag: 2.1.0
-License: GPLv2 or later
-License URI: http://www.gnu.org/licenses/gpl-2.0.html
+License: GPLv3 or later
+License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
-Create a Multiple Source Video Network with WordPress.
+Katalyst Video Plus is a powerful plugin that automatically creates posts and syncs content from video hosting services.
 
 == Description ==
 
 Katalyst Video Plus enables automatic content syncing between a video content or streaming services and WordPress.
 
-**Who is using Katalyst Video Plus?**
-Take a look at some of the best sites in the [Katalyst Video Plus Showcase](http://katalystvideoplus.com/showcase/ "Katalyst Video Plus Showcase").
+[youtube http://youtu.be/Lm6xsKHPRB4]
 
-**Extensions**
+= Extensions =
 Katalyst Video Plus has free and premium extensions to expand functionality. All officially approved extensions can be found in the [Katalyst Videos Plus Add-ons](http://katalystvideoplus.com/extensions/ "Katalyst Videos Plus Add-ons") section.
 
-**More Information**
-Visit the Katalyst Video Plus website for more information on [Katalyst Videos Plus](http://katalystvideoplus.com/ "Katalyst Videos Plus").
+= Who is using Katalyst Video Plus? =
+Take a look at some of the best sites in the [Katalyst Video Plus Showcase](http://katalystvideoplus.com/showcase/ "Katalyst Video Plus Showcase").
 
-Must be used with KVP service bridge plugins to interact with hosting services.
+= More Information =
+Visit the Katalyst Video Plus website for more information on [Katalyst Videos Plus](http://katalystvideoplus.com/ "Katalyst Videos Plus").
 
 == Installation ==
 
