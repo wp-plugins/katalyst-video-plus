@@ -1,6 +1,6 @@
 === Katalyst Video Plus ===
 Contributors: Keiser Media
-Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=billing@katalystvideoplus.co&item_name=Donation+for+Katalyst+Video+Plus
+Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=billing@katalystvideoplus.com&item_name=Donation+for+Katalyst+Video+Plus
 Tags: import, audit, youtube, thumbnail, twitch, vimeo, ustream, 
 Requires at least: 3.4
 Tested up to: 4.1
