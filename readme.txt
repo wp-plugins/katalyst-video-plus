@@ -14,7 +14,7 @@ Katalyst Video Plus is a powerful plugin that automatically creates posts and sy
 
 Katalyst Video Plus enables automatic content syncing between a video content or streaming services and WordPress.
 
-[youtube http://youtu.be/Lm6xsKHPRB4]
+[youtube http://www.youtube.com/watch?v=Lm6xsKHPRB4]
 
 = Extensions =
 Katalyst Video Plus has free and premium extensions to expand functionality. All officially approved extensions can be found in the [Katalyst Videos Plus Add-ons](http://katalystvideoplus.com/extensions/ "Katalyst Videos Plus Add-ons") section.
