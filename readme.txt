@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=billing@
 Tags: import, audit, youtube, thumbnail, twitch, vimeo, ustream, 
 Requires at least: 3.4
 Tested up to: 4.1
-Stable tag: 2.1.0
+Stable tag: 2.1.1
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -46,6 +46,14 @@ By default, authorship can only be attributed to users with the 'author' role or
 4. Action Log
 
 == Changelog ==
+
+= 2.1.1 (Dec. 19, 2014) =
+* [Added] Settings Update Notification.
+* [Added] Option to change scheduling for import and audit fequency.
+* [Changed] Import and Audit are no longer dependent upon setup accounts.
+* [Changed] 'Log' page title changed to 'Action Log'.
+* [Fixed] Initial import post format issue.
+* [Fixed] Perge log settings identifier.
 
 = 2.1.0 (Dec. 8, 2014) =
 * [Added] Change import post format.

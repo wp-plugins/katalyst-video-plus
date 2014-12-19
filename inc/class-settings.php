@@ -81,6 +81,13 @@ class Katalyst_Video_Plus_Settings {
 	 */
 	private function get_registered_settings() {
 		
+		$cron_schedules = wp_get_schedules();
+		
+		foreach( $cron_schedules as $key => $schedule )
+			$cron_schedules[$key] = $schedule['display'];
+		
+		
+		
 		$settings = array(
 			// General Settings
 			'general' => apply_filters( 'kvp_settings_general',
@@ -126,31 +133,49 @@ class Katalyst_Video_Plus_Settings {
 				
 				array(
 					
-					'perge_log' => array(
+					'import_post_format' => array(
 						'id'	=> 'import_post_format',
+						'name'	=> __( 'Import Post Format', 'kvp' ),
+						'desc'	=> __( 'Changing this option will change the post format on newly imported or audited posts.', 'kvp' ),
+						'type'	=> 'select',
+						'options' => apply_filters( 'kvp_import_post_formats', array(
+								'standard'	=> 'Standard',
+								'video'		=> 'Video',
+								
+							)
+						),
+					),
+					
+					'import_schedule' => array(
+						'id'	=> 'import_schedule',
+						'name'	=> __( 'Import Schedule', 'kvp' ),
+						'desc'	=> __( 'Sets the recurrance schedule of importing. <strong>Note: Force an import from the KVP dashboard to flush the old setting.</strong>', 'kvp' ),
+						'type'	=> 'select',
+						'options' => apply_filters( 'kvp_import_schedules', $cron_schedules ),
+						'std'	=> 'hourly',
+					),
+					
+					'audit_schedule' => array(
+						'id'	=> 'audit_schedule',
+						'name'	=> __( 'Audit Schedule', 'kvp' ),
+						'desc'	=> __( 'Sets the recurrance schedule for the full audit. <strong>Note: Force an audit from the KVP dashboard to flush the old setting.</strong>', 'kvp' ),
+						'type'	=> 'select',
+						'options' => apply_filters( 'kvp_audit_schedules', $cron_schedules ),
+						'std'	=> 'daily',
+					),
+					
+					'perge_log' => array(
+						'id'	=> 'perge_log',
 						'name'	=> __( 'Perge Log', 'kvp' ),
 						'desc'	=> __( 'Automatically perges log enteries older than setting.', 'kvp' ),
 						'type'	=> 'select',
-						'options' => apply_filters('kvp_import_post_formats', array(
+						'options' => apply_filters( 'kvp_import_post_formats', array(
 								'30'	=> __( '30 Days', 'kvp' ),
 								'90'	=> __( '90 Days', 'kvp' ),
 								'false'	=> __( 'Never', 'kvp' ),
 							)
 						),
 						'std'	=> 'false',
-					),
-					
-					'import_post_format' => array(
-						'id'	=> 'import_post_format',
-						'name'	=> __( 'Import Post Format', 'kvp' ),
-						'desc'	=> __( 'Changing this option will change the post format on newly imported or audited posts.', 'kvp' ),
-						'type'	=> 'select',
-						'options' => apply_filters('kvp_import_post_formats', array(
-								'standard'	=> 'Standard',
-								'video'		=> 'Video',
-								
-							)
-						),
 					),
 					
 				)
@@ -238,7 +263,7 @@ class Katalyst_Video_Plus_Settings {
 		// Merge our new settings with the existing
 		$output = array_merge( $this->options, $output );
 	
-		add_settings_error( 'kvp-notices', '', __( 'Settings Updated', 'kvp' ), 'updated' );
+		add_settings_error( 'kvp-settings-notices', '', __( 'Settings Updated', 'kvp' ), 'updated' );
 	
 		return $output;
 		

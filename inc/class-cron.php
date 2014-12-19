@@ -18,8 +18,13 @@ class Katalyst_Video_Plus_CRON {
 	 */
 	public function setup_cron() {
 		
+		$settings = get_option( 'kvp_settings', array() );
+		
+		$import_schedule	= isset($settings['import_schedule']) ? $settings['import_schedule'] : 'hourly';
+		$audit_schedule		= isset($settings['audit_schedule']) ? $settings['audit_schedule'] : 'daily';
+		
 		if( !wp_next_scheduled('kvp_import_cron') )
-			wp_schedule_event( time() + ( 60 * 60 ), 'hourly', 'kvp_import_cron' );
+			wp_schedule_event( time() + ( 60 * 60 ), $import_schedule, 'kvp_import_cron' );
 		
 		elseif( is_admin() && isset( $_POST['_kvp_import_nonce'] ) && wp_verify_nonce( $_POST['_kvp_import_nonce'], 'kvp_force_import' ) ) {
 			
@@ -29,7 +34,7 @@ class Katalyst_Video_Plus_CRON {
 		}
 		
 		if( !wp_next_scheduled('kvp_audit_cron') )
-			wp_schedule_event( time() + ( 24 * 60 * 60 ), 'daily', 'kvp_audit_cron' );
+			wp_schedule_event( time() + ( 24 * 60 * 60 ), $audit_schedule, 'kvp_audit_cron' );
 		
 		elseif( is_admin() && isset( $_POST['_kvp_audit_nonce'] ) && wp_verify_nonce( $_POST['_kvp_audit_nonce'], 'kvp_force_audit' ) ) {
 			

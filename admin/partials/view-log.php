@@ -16,7 +16,7 @@ if ( !current_user_can('import') )
 $action_log = new KVP_Action_Log_Table();
 ?>
 <div class="wrap">
-	<h2><?php _e('Log', 'kvp'); ?>
+	<h2><?php _e('Action Log', 'kvp'); ?>
 	<div id="katalyst-admin-general" class="metabox-holder">
 	    <div id="post-body">
 	        <div id="post-body-content">

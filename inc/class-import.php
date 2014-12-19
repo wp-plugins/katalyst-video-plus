@@ -141,11 +141,22 @@ class Katalyst_Video_Plus_Import {
 			if( isset( $this->queue[0]['last_audit'] ) && ( ( 60 * 60 ) > ( current_time( 'timestamp', true ) - $this->queue[0]['last_audit'] ) ) )
 				return true;
 			
+			foreach( $this->accounts as $id => $account ) {
+				
+				if( ( $account['service'] == $this->queue[0]['service'] ) && ( $account['username'] == $this->queue[0]['username'] ) ) {
+					
+					$this->queue[0]['account'] = $id;
+					continue;
+					
+				}
+				
+			}
+			
 		}
 		
 		foreach( $this->queue as $key => $item ) {
 			
-			if( !isset($this->accounts[$item['account']]['ext_status']) || !isset($this->accounts[$item['account']]['ext_status']['video']) || 'active' != $this->accounts[$item['account']]['ext_status']['video'] ) {
+			if( isset($this->accounts[$item['account']]) && ( !isset($this->accounts[$item['account']]['ext_status']) || !isset($this->accounts[$item['account']]['ext_status']['video']) || 'active' != $this->accounts[$item['account']]['ext_status']['video'] ) ) {
 				unset( $this->queue[$key] );
 				
 				if( !kvp_in_test_mode() )
@@ -157,8 +168,10 @@ class Katalyst_Video_Plus_Import {
 			if( false === $audit )
 				set_transient( 'kvp_import_lock', 'locked', ( 5 * 60 ) );
 			
+			$account = ( isset($this->accounts[$item['account']]) ) ? $this->accounts[$item['account']] : $item;
+			
 			$service	= 'KVP_' . str_replace( ' ', '_', $this->services[$item['service']]['label'] ) . '_Client';
-			$service	= new $service( $this->accounts[$item['account']] );
+			$service	= new $service( $account );
 			
 			$video_info = $service->get_video( $item['video_id'] );
 			
@@ -315,7 +328,7 @@ class Katalyst_Video_Plus_Import {
 		$post_id = wp_insert_post( $post );
 		
 		if( isset($this->settings['import_post_format']) )
-			set_post_format( $post['ID'], $this->settings['import_post_format'] );
+			set_post_format( $post_id, $this->settings['import_post_format'] );
 		
 		update_post_meta( $post_id, '_kvp', array( 'post_id' => $post_id, 'video_id' => $item['video_id'], 'account' => $account['ID'],  'service' => $account['service'], 'username' => $account['username'], 'last_audit' => time() ) );
 		
@@ -393,7 +406,7 @@ class Katalyst_Video_Plus_Import {
 	 */
 	private function fetch_remote_file( $url, $post ) {
 		
-		$file_name = basename( $url );
+		$file_name = md5( uniqid( rand(), true ) ) . '_' . basename( $url );
 		$upload = wp_upload_bits( $file_name, 0, '', $post['upload_date'] );
 		
 		if( $upload['error'] )
