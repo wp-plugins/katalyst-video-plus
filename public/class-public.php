@@ -169,7 +169,6 @@ class Katalyst_Video_Plus_Public {
 		
 		$atts = array(
 			'video_id'	=> $post_meta['video_id'],
-			'username'	=> $post_meta['username'],
 			'height'	=> ( $size[0] * 9 / 16 ),
 			'width'		=> $size[0],
 		);

@@ -141,17 +141,6 @@ class Katalyst_Video_Plus_Import {
 			if( isset( $this->queue[0]['last_audit'] ) && ( ( 60 * 60 ) > ( current_time( 'timestamp', true ) - $this->queue[0]['last_audit'] ) ) )
 				return true;
 			
-			foreach( $this->accounts as $id => $account ) {
-				
-				if( ( $account['service'] == $this->queue[0]['service'] ) && ( $account['username'] == $this->queue[0]['username'] ) ) {
-					
-					$this->queue[0]['account'] = $id;
-					continue;
-					
-				}
-				
-			}
-			
 		}
 		
 		foreach( $this->queue as $key => $item ) {
@@ -169,6 +158,11 @@ class Katalyst_Video_Plus_Import {
 				set_transient( 'kvp_import_lock', 'locked', ( 5 * 60 ) );
 			
 			$account = ( isset($this->accounts[$item['account']]) ) ? $this->accounts[$item['account']] : $item;
+			
+			if( !isset($this->services[$item['service']]) ) {
+				kvp_action_log( __( 'Invalid Service', 'kvp' ), __( 'Could not find "' . $item['service'] . '"" service.', 'kvp' ), __( 'Core Import', 'kvp' ) );
+				continue;
+			}
 			
 			$service	= 'KVP_' . str_replace( ' ', '_', $this->services[$item['service']]['label'] ) . '_Client';
 			$service	= new $service( $account );
@@ -304,20 +298,24 @@ class Katalyst_Video_Plus_Import {
 	 */
 	private function process_post( $video_info, $item, $post_id ) {
 		
-		$account	= $this->accounts[$item['account']];
-		$post_date	= apply_filters( 'kvp_' . $account['service'] . '_post_date', current_time( 'mysql' ), $video_info );
+		$account	= ( isset($item['account']) ) ? $this->accounts[$item['account']] : array( 'ID' => null, 'username' => null );
+		$post_date	= apply_filters( 'kvp_' . $item['service'] . '_post_date', current_time( 'mysql' ), $video_info );
 		
 		$post = array(
-			'post_title'	=> apply_filters( 'kvp_' . $account['service'] . '_post_title', '', $video_info ),
-			'post_content'	=> apply_filters( 'kvp_' . $account['service'] . '_post_content', '', $video_info ),
-			'post_status'	=> apply_filters( 'kvp_' . $account['service'] . '_post_status', 'publish', $video_info ),
+			'post_title'	=> apply_filters( 'kvp_' . $item['service'] . '_post_title', '', $video_info ),
+			'post_content'	=> apply_filters( 'kvp_' . $item['service'] . '_post_content', '', $video_info ),
+			'post_status'	=> apply_filters( 'kvp_' . $item['service'] . '_post_status', 'publish', $video_info ),
 			'post_date'		=> get_date_from_gmt( date('Y-m-d H:i:s', strtotime($post_date)), 'Y-m-d H:i:s'),
 			'post_date_gmt'	=> date('Y-m-d H:i:s', strtotime($post_date) ),
-			'post_author'	=> $account['author'],
-			'post_category'	=> $account['categories'],
 		);
 		
-		$post = apply_filters( 'kvp' . $account['service'] . '_post', $post );
+		if( isset($account['author']) )
+			$post['post_author'] = $account['author'];
+		
+		if( isset($account['categories']) )
+			$post['post_category'] = $account['categories'];
+		
+		$post = apply_filters( 'kvp' . $item['service'] . '_post', $post );
 		
 		if( kvp_in_test_mode() )
 			return kvp_action_log( sprintf( __( 'Post Creation Ready for Service: %s and username: %s', 'kvp' ), '<i>' . $item['service'] . '</i>', '<i>' . $item['username'] . '</i>' ), $post, __( 'Core Import', 'kvp' ) );
@@ -325,12 +323,12 @@ class Katalyst_Video_Plus_Import {
 		if( is_int($post_id) )
 			$post = array_merge( array( 'ID' => $post_id ), $post );
 		
-		$post_id = wp_insert_post( $post );
+		$post_id = ( !isset($post['ID']) ) ? wp_insert_post( $post ) : wp_update_post( $post );
 		
 		if( isset($this->settings['import_post_format']) )
 			set_post_format( $post_id, $this->settings['import_post_format'] );
 		
-		update_post_meta( $post_id, '_kvp', array( 'post_id' => $post_id, 'video_id' => $item['video_id'], 'account' => $account['ID'],  'service' => $account['service'], 'username' => $account['username'], 'last_audit' => time() ) );
+		update_post_meta( $post_id, '_kvp', array( 'post_id' => $post_id, 'video_id' => $item['video_id'], 'account' => $account['ID'],  'service' => $item['service'], 'username' => $account['username'], 'last_audit' => time() ) );
 		
 		return $post_id;
 		

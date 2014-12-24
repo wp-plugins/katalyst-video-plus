@@ -86,20 +86,16 @@ class KVP_YouTube_Basic_Client extends Katalyst_Video_Plus_Client {
 	 */
 	public function check_status() {
 		
-		$channel_query	= $this->create_url( array(), 'channels' );
-		$channel_code	= $this->request( $channel_query, true );
+		$channel_query		= $this->create_url( array(), 'channels' );
+		$channel_response	= $this->request( $channel_query );
 		
-		switch( $channel_code ) {
-			case 200:
-				$status = __( 'Connected', 'kvp' );
-				break;
-			
-			default:
-				$status = __( 'Error Connecting', 'kvp' );
-				break;
-		}
+		if( is_wp_error( $channel_response ) )
+			return __( 'Server Connection Error', 'kvp' );
 		
-		return $status;
+		if( !isset($channel_response['pageInfo']['totalResults']) || 0 == $channel_response['pageInfo']['totalResults'] )
+			return __( 'Channel not found.', 'kvp' );
+		
+		return __( 'Successful Connection', 'kvp' );
 		
 	}
 	
@@ -117,7 +113,7 @@ class KVP_YouTube_Basic_Client extends Katalyst_Video_Plus_Client {
 		$channel_response = $this->request( $channel_query );
 		
 		if( is_wp_error( $channel_response ) )
-				return $channel_response;
+			return $channel_response;
 		
 		if( !isset($channel_response['pageInfo']['totalResults']) || 0 == $channel_response['pageInfo']['totalResults'] )
 			return false;
@@ -164,8 +160,8 @@ class KVP_YouTube_Basic_Client extends Katalyst_Video_Plus_Client {
 		$video_query = $this->create_url( $video_id, 'videos' );
 		$video_response = $this->request( $video_query );
 		
-		if( is_wp_error( $video_response ) )
-			return $video_response;
+		if( !isset($video_response['items'][0]['snippet']) || is_wp_error( $video_response ) )
+			return null;
 		
 		return $video_response['items'][0]['snippet'];
 		

@@ -49,15 +49,12 @@ abstract class Katalyst_Video_Plus_Client {
 	 * 
 	 * @since 2.0.0
 	 */
-	protected static function request( $url, $check = false ) {
+	protected static function request( $url ) {
 		
 		$response = (array) wp_remote_get( $url, array( 'timeout' => 5, 'sslverify' => false ) );
 		
 		if( !isset($response['response']) || !isset($response['response']['code']) )
 			return false;
-		
-		if( $check )
-			return $response['response']['code'];
 		
 		if( !isset($response['response']['code']) || 200 != $response['response']['code'] || is_wp_error($response) )
 			return new WP_Error( 'response_code', array_merge( array( 'request_url' => $url ), $response ) );

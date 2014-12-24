@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=billing@
 Tags: import, audit, youtube, thumbnail, twitch, vimeo, ustream, 
 Requires at least: 3.4
 Tested up to: 4.1
-Stable tag: 2.1.1
+Stable tag: 2.1.2
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -46,6 +46,11 @@ By default, authorship can only be attributed to users with the 'author' role or
 4. Action Log
 
 == Changelog ==
+
+= 2.1.2 (Dec. 23, 2014) =
+* [Changed]	get_video return values.
+* [Improved] Account connection status messages.
+* [Removed] Variable 'username' from video embed attributes.
 
 = 2.1.1 (Dec. 19, 2014) =
 * [Added] Settings Update Notification.

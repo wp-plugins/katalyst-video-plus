@@ -150,7 +150,7 @@ class Katalyst_Video_Plus_Admin {
 	        		$service = new $service( $account );
 	        		$status = $service->check_status();
 	        		
-	        		if( 'Connected' !== $status ) {
+	        		if( 'Successful Connection' !== $status ) {
 						++$errors;
 						continue;
 	        		}
