@@ -10,7 +10,7 @@
 */
 global $wpdb;
 
-$accounts	= get_option( 'kvp_accounts', array() );
+$sources	= get_option( 'kvp_accounts', array() );
 
 $services['inactive'] = array(
 	'label'		=> __( 'Inactive Service', 'kvp' ),
@@ -88,13 +88,6 @@ foreach( $posts_meta as $post_meta ) {
 	else
 		++$services['inactive']['value'];
 	
-	if( !isset($accounts[$post_meta['account']]) )
-		continue;
-	
-	if( !isset($authors[$accounts[$post_meta['account']]['author']]['author']) )
-		$authors[$accounts[$post_meta['account']]['author']]['author'] = $accounts[$post_meta['account']]['author'];
-	
-	$authors[$accounts[$post_meta['account']]['author']]['count'] = ( !isset($authors[$accounts[$post_meta['account']]['author']]['count']) ) ? 1 : ++$authors[$accounts[$post_meta['account']]['author']]['count'];
 	
 }
 

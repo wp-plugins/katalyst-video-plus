@@ -84,6 +84,24 @@ class Katalyst_Video_Plus_Public {
 	}
 	
 	/**
+	 * Adds KVP Videos to main query
+	 * 
+	 * @param object $query The posts query
+	 */
+	public function add_to_main_query( $query ) {
+		
+		if( $query->is_main_query() && is_home() ) {
+			
+			$post_types = $query->get('post_type');
+			$post_types = empty($post_types) ? array( 'post' ) : $post_types;
+			
+			$query->set( 'post_type', array_merge( $post_types, array('kvp_video') ) );
+			
+		}
+		
+	}
+	
+	/**
 	 * Audit current KVP page
 	 * 
 	 * @since 2.0.0

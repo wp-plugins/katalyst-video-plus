@@ -38,14 +38,57 @@ class Katalyst_Video_Plus_Upgrade {
 		$this->plugin_version = $plugin_version;
 		$this->installed_version = get_option( 'kvp_version', '0.0.0' );
 		
-		if( version_compare( $this->installed_version, '2.0.0', '<') )
+		// Set Transients for Admin Notices
+		if( $this->plugin_version !== $this->installed_version && '0.0.0' != $this->installed_version )
+			set_transient( 'kvp_upgrade_notices', $this->installed_version, ( 7 * 24 * 60 * 60 ) );
+		
+		// Upgrade to Current Version
+		if( version_compare( $this->installed_version, '2.0.0', '<' ) )
 			$this->_1_0_0_to_2_0_0();
 		
-		if( version_compare( $this->installed_version, '2.0.3', '<') )
+		if( version_compare( $this->installed_version, '2.0.3', '<' ) )
 			$this->_2_0_0_to_2_0_3();
 		
-		if( !version_compare( $this->installed_version, $this->plugin_version, '==') )
+		if( version_compare( $this->installed_version, '3.0.0', '<' ) )
+			$this->_2_0_3_to_3_0_0();
+		
+		if( !version_compare( $this->installed_version, $this->plugin_version, '==' ) )
 			update_option( 'kvp_version', $this->plugin_version );
+		
+	}
+	
+	/**
+	 * Checks Upgrade Transient and Adds Message to Queue
+	 * 
+	 * @since 3.0.0
+	 */
+	public function upgrade_notices() {
+		
+		$upgrade_notices = array(
+			'3.0.0' => array(
+				sprintf( __( 'Create new video %s and set the %s.', 'kvp' ), '<a href="' . admin_url('edit-tags.php?taxonomy=kvp_video_category&post_type=kvp_video') . '">' . __( 'categories', 'kvp' ) . '</a>', '<a href="' . admin_url('edit.php?post_type=kvp_video&page=kvp-sources') . '">' . __( 'categories', 'kvp' ) . '</a>' ),
+				sprintf( __( 'Sources from previous versions of KVP must be %s.', 'kvp' ), '<a href="' . admin_url('edit.php?post_type=kvp_video&page=kvp-sources') . '">' . __( 'activated', 'kvp' ) . '</a>' ),
+			)	
+		);
+		
+		if ( isset($_GET['kvp_ignore']) && '1' == $_GET['kvp_ignore'] )
+			delete_transient('kvp_upgrade_notices');
+		
+		$upgrade_version = get_transient('kvp_upgrade_notices');
+		
+		if( false === $upgrade_version )
+			return;
+		
+		foreach( $upgrade_notices as $version => $notices ) {
+			
+			if( version_compare( $upgrade_version, $version, '<' ) ) {
+				
+				foreach( $notices as $notice )
+					echo '<div class="updated"><p>' . $notice . ' | <a href="' . add_query_arg( 'kvp_ignore', true ) . '">' . __( 'Hide All KVP Notices', 'kvp' ) . '</a></p></div>';
+				
+			}
+			
+		}
 		
 	}
 	
@@ -165,6 +208,96 @@ class Katalyst_Video_Plus_Upgrade {
 		}
 		
 		update_option( 'kvp_accounts', $accounts );
+		
+	}
+	
+	/**
+	 * Upgrades from 2.0.3 to 3.0.0
+	 * 
+	 * @since 3.0.0
+	 */
+	private function _2_0_3_to_3_0_0() {
+		
+		delete_option( 'kvp_action_log' );
+		delete_option( 'kvp_queue' );
+		
+		// Restructures settings
+		$settings	= get_option( 'kvp_settings', array() );
+		$changes	= array(
+			'youtube_api_fallback' => 'youtube_api_key',	
+		);
+		
+		foreach( $changes as $old => $new ) {
+			
+			if( isset($settings[$old]) ) {
+				
+				$value = $settings[$old];
+				$settings[$new] = $value;
+				unset($settings[$old]);
+				
+			}
+			
+		}
+		
+		update_option( 'kvp_settings', $settings );
+		
+		// Restructures accounts into sources
+		$accounts	= get_option( 'kvp_accounts', array() );
+		$sources	= array();
+		
+		foreach( $accounts as $id => $account ) {
+			
+			$source = array(
+				
+				'id'				=> $id,
+				'name'				=> $account['username'],
+				'service'			=> $account['service'],
+				'type'				=> 'channels',
+				'items'				=> array( $account['username'] ),
+				'creator'			=> get_current_user_id(),
+				'author'			=> $account['author'],
+				'tax_input'			=> array( 'kvp_video_category' => array() ),
+				'comments'			=> 'open',
+				'publish'			=> 'publish',
+				'schedule_time'		=> time(),
+				'schedule_freq'		=> 'hourly',
+				'limit'				=> null,
+				'status'			=> 'inactive',
+					
+			);
+			
+			$sources[$id] = apply_filters( 'kvp_save_source', $source );
+		}
+		
+		update_option( 'kvp_sources', $sources );
+		delete_option( 'kvp_accounts' );
+		
+		kvp_purge_cron();
+		
+		// Coverts kvp posts into kvp_video
+		$post_args	= array( 'post_type' => 'post', 'numberposts' => -1 );
+		$posts		= get_posts( $post_args );
+		
+		foreach( $posts as $post ) {
+			
+			$video_settings = get_post_meta( $post->ID, '_kvp', true );
+			
+			if( empty($video_settings) )
+				continue;
+			
+			set_post_type( $post->ID, 'kvp_video' );
+			
+			if( isset($video_settings['account']) )
+				unset($video_settings['account']);
+			
+			if( isset($video_settings['username']) )
+				unset($video_settings['username']);
+			
+			update_post_meta( $post->ID, '_kvp', $video_settings );
+			
+		}
+		
+		wp_reset_postdata();
 		
 	}
 	

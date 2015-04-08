@@ -18,6 +18,7 @@ class KVP_YouTube_Basic_Service extends Katalyst_Video_Plus_Service {
 	public function __construct() {
 		
 		parent::__construct( 'youtube' );
+		add_filter( 'kvp_save_source', array( $this, 'save_source' ) );
 		add_filter( 'kvp_youtube_post_thumbnail', array( $this, 'post_thumbnail' ), 10, 2 );
 		add_filter( 'kvp_settings_misc', array( $this, 'add_settings' ) );
 		
@@ -34,12 +35,69 @@ class KVP_YouTube_Basic_Service extends Katalyst_Video_Plus_Service {
 			'label'		=> __( 'YouTube Basic', 'kvp' ),
 			'color'		=> '#e74c3c',
 			'highlight'	=> '#c0392b',
+			'types'		=> array(
+				'channels',
+				'playlists',
+				'videos',
+				'search',
+			),
 			'features'	=> array(
 				'developer_key',
 			),
 		);
 		
 		return $labels;
+	}
+	
+	public function save_source( $source ) {
+		
+		if( 'youtube' != $source['service'] || 'channels' != $source['type'] )
+			return $source;
+		
+		$settings = get_option( 'kvp_settings', array() );
+		
+		$query = array( 'part' => 'id', 'id' => implode( ',', $source['items'] ) );
+		
+		if( isset($settings['youtube_api_key']) )
+			$query = array_merge( $query, array( 'key' => $settings['youtube_api_key'] ) );
+		
+		$service = new KVP_YouTube_Basic_Client( $source );
+		$response = $service->request( 'channels', $query );
+		
+		if( count($source['items']) == $response['pageInfo']['totalResults'] )
+			return $source;
+		
+		$channels = array();
+		
+		foreach( $response['items'] as $item )
+			$channels[] = $item['id'];
+		
+		foreach( $source['items'] as $key => $item ) {
+			
+			if( in_array( $item, $channels ) )
+				continue;
+			
+			$query = array( 'part' => 'id', 'forUsername' => $item );
+			
+			if( isset($settings['youtube_api_key']) )
+				$query = array_merge( $query, array( 'key' => $settings['youtube_api_key'] ) );
+			
+			$response = $service->request( 'channels', $query );
+			
+			if( !isset($response['items'][0]['id']) ) {
+				
+				unset( $source['items'][$key] );
+				$name = ( isset($source['name']) ) ? $source['name'] : __( 'Not Set', 'kvp' );
+				kvp_activity_log( __( 'Save YouTube Source', 'kvp' ), 'error', array( 'message' => sprintf( __( 'Unidentifiable Channel <em>%s</em> removed from source <em></em>.', 'kvp' ), $item, $source['name'] ) ) );
+				continue;
+			}
+			
+			$source['items'][$key] = $response['items'][0]['id'];
+			
+		}
+		
+		return $source;
+		
 	}
 	
 	/**
@@ -129,10 +187,10 @@ class KVP_YouTube_Basic_Service extends Katalyst_Video_Plus_Service {
 			'type'	=> 'header',
 		);
 		
-		$settings['youtube_api_fallback'] = array(
-			'id'	=> 'youtube_api_fallback',
-			'name'	=> __( 'YouTube API Key Fallback', 'kvp' ),
-			'desc'	=> __( 'If a YouTube account has issues with its API, this API will be used to prevent an interruption of service.', 'kvp' ),
+		$settings['youtube_api_key'] = array(
+			'id'	=> 'youtube_api_key',
+			'name'	=> __( 'YouTube API Key', 'kvp' ),
+			'desc'	=> sprintf( __( '%s required to access YouTube videos.', 'kvp' ), '<a href="https://developers.google.com/youtube/v3/getting-started#before-you-start">' . __( 'API key' ) . '</a>' ),
 			'type'	=> 'text',
 		);
 		

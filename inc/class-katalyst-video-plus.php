@@ -11,6 +11,7 @@
 * @subpackage Katalyst_Video_Plus/inc
 * @author     Keiser Media <support@keisermedia.com>
 */
+
 class Katalyst_Video_Plus {
 
 	/**
@@ -56,7 +57,8 @@ class Katalyst_Video_Plus {
 		$this->register_settings();
 		$this->define_admin_hooks();
 		$this->define_public_hooks();
-		$this->init_services();
+		$this->register_post_types();
+		$this->init_modules();
 		$this->setup_CRON();
 
 	}
@@ -76,11 +78,12 @@ class Katalyst_Video_Plus {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'inc/class-settings.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-admin.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-public.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'inc/class-post-types.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'inc/class-cron.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'inc/class-service.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'modules/youtube-basic/class-service.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'inc/class-client.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'modules/youtube-basic/class-client.php';
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'inc/class-cron.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'inc/class-import.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'inc/functions.php';
 
@@ -122,8 +125,8 @@ class Katalyst_Video_Plus {
 	 */
 	private function process_upgrade() {
 
-		$katalyst_video_plus_update = new Katalyst_Video_Plus_Upgrade( $this->get_plugin_info( 'version' ) );
-		
+		$katalyst_video_plus_upgrade = new Katalyst_Video_Plus_Upgrade( $this->get_plugin_info( 'version' ) );
+		$this->loader->add_action( 'admin_notices', $katalyst_video_plus_upgrade, 'upgrade_notices' );
 	}
 
 	/**
@@ -152,9 +155,11 @@ class Katalyst_Video_Plus {
 
 		$this->loader->add_action( 'admin_enqueue_scripts', $katalyst_video_plus_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $katalyst_video_plus_admin, 'enqueue_scripts' );
-		$this->loader->add_action( 'admin_menu', $katalyst_video_plus_admin, 'setup_menu' );
+		$this->loader->add_action( 'admin_menu', $katalyst_video_plus_admin, 'setup_menu', 9 );
+		$this->loader->add_action( 'admin_head', $katalyst_video_plus_admin, 'remove_about_menu' );
 		$this->loader->add_action( 'admin_init', $katalyst_video_plus_admin, 'setup_meta_boxes' );
-		$this->loader->add_action( 'wp_ajax_kvp_inline_save', $katalyst_video_plus_admin, 'edit_account_ajax' );
+		$this->loader->add_action( 'wp_ajax_kvp_inline_save', $katalyst_video_plus_admin, 'edit_source_ajax' );
+		$this->loader->add_action( 'wp_ajax_kvp_source_test', $katalyst_video_plus_admin, 'test_source_ajax' );
 		
 	}
 
@@ -173,17 +178,27 @@ class Katalyst_Video_Plus {
 		$this->loader->add_action( 'wp', $katalyst_video_plus_public, 'audit_single' );
 		$this->loader->add_action( 'post_thumbnail_html', $katalyst_video_plus_public, 'post_thumbnail_html', 10, 5 );
 		$this->loader->add_action( 'the_content', $katalyst_video_plus_public, 'the_content' );
+		
+		$settings = get_option( 'kvp_settings', array() );
+		
+		if( isset($settings['show_videos_in_main_query']) )
+			$this->loader->add_action( 'pre_get_posts', $katalyst_video_plus_public, 'add_to_main_query' );
 
 	}
-	
+
 	/**
-	 * Initializes services
-	 * 
-	 * @since 2.0.0
+	 * Process post types
+	 *
+	 * @since    3.0.0
+	 * @access   private
 	 */
-	public function init_services() {
+	private function register_post_types() {
+
+		$katalyst_video_plus_post_types = new Katalyst_Video_Plus_Post_Types( $this->get_plugin_info( 'slug' ), $this->get_plugin_info( 'version' ) );
 		
-		$kvp_youtube_service = new KVP_YouTube_Basic_Service;
+		$this->loader->add_action( 'init', $katalyst_video_plus_post_types, 'register_video' );
+		$this->loader->add_action( 'init', $katalyst_video_plus_post_types, 'register_taxonomies' );
+		$this->loader->add_action( 'admin_enqueue_scripts', $katalyst_video_plus_post_types, 'enqueue_assets' );
 		
 	}
 
@@ -198,9 +213,26 @@ class Katalyst_Video_Plus {
 		$katalyst_video_plus_CRON = new Katalyst_Video_Plus_CRON();
 		
 		$this->loader->add_action( 'init', $katalyst_video_plus_CRON, 'setup_cron' );
-		$this->loader->add_action( 'kvp_import_cron', $katalyst_video_plus_CRON, 'import_event' );
 		$this->loader->add_action( 'kvp_audit_cron', $katalyst_video_plus_CRON, 'audit_event' );
 		$this->loader->add_action( 'kvp_purge_log_cron', $katalyst_video_plus_CRON, 'purge_log' );
+		
+		$sources = get_option( 'kvp_sources', array() );
+		
+		foreach( $sources as $source )
+			$this->loader->add_action( 'kvp_import_' . $source['id'], $katalyst_video_plus_CRON, 'import_event' );
+		
+	}
+	
+	/**
+	 * Initializes modules
+	 * 
+	 * @since 2.0.0
+	 */
+	public function init_modules() {
+		
+		$kvp_youtube_service = new KVP_YouTube_Basic_Service;
+		
+		$this->loader->add_action( 'init', $kvp_youtube_service, '__construct' );
 		
 	}
 

@@ -1,6 +1,6 @@
 <?php if( ! defined('ABSPATH') ) { header('Status: 403 Forbidden'); header('HTTP/1.1 403 Forbidden'); exit(); }
 /**
-* Imports videos from registered accounts.
+* Imports videos from registered sources.
 *
 * @link       http://katalystvideoplus.com
 * @since      2.0.0
@@ -20,13 +20,13 @@ class Katalyst_Video_Plus_Import {
 	private $settings = array();
 	
 	/**
-	 * The registered accounts.
+	 * The registered sources.
 	 *
 	 * @since    2.0.0
 	 * @access   private
-	 * @var      array Accounts.
+	 * @var      array sources.
 	 */
-	private $account = array();
+	private $sources = array();
 	
 	/**
 	 * Active services.
@@ -38,15 +38,6 @@ class Katalyst_Video_Plus_Import {
 	private $services = array();
 	
 	/**
-	 * Queued videos.
-	 *
-	 * @since    2.0.0
-	 * @access   private
-	 * @var      array Queued.
-	 */
-	private $queue = array();
-	
-	/**
 	 * Initializes important variables
 	 * 
 	 * @since 2.0.0
@@ -54,8 +45,8 @@ class Katalyst_Video_Plus_Import {
 	public function __construct() {
 		
 		$this->settings = get_option( 'kvp_settings', array() );
-		$this->accounts = get_option( 'kvp_accounts', array() );
 		$this->services = apply_filters( 'kvp_services', array() );
+		$this->sources	= get_option( 'kvp_sources', array() );
 		
 	}
 	
@@ -66,35 +57,46 @@ class Katalyst_Video_Plus_Import {
 	 */
 	public function audit( $single = false ) {
 		
-		if( false === $single )
-			kvp_action_log( __( 'Full Audit Begin', 'kvp' ), __( '', 'kvp' ), __( 'Core Import', 'kvp' ) );
+		$results = array(
+			'total'			=> 0,
+			'duplicates'	=> 0,
+			'deleted'		=> 0,
+			'start_time'	=> microtime(true),
+			'end_time'		=> 0,
+		);
 		
-		$posts_meta		= $this->get_posts_meta();
-		$posts_audit	= ( false === $single ) ? $posts_meta : array( get_post_meta( $single, '_kvp', true ) );
+		$posts_audit	= ( false === $single ) ? kvp_get_posts() : array( $single );
+		$posts_meta		= kvp_get_posts_meta();
 		
-		foreach( $posts_audit as $audit_meta ) {
+		foreach( $posts_audit as $post_id ) {
 			
-			if( false === get_post_status($audit_meta['post_id']) )
+			if( false === get_post_status($post_id) )
 				continue;
+				
+			$single_post_meta = get_post_meta( $post_id, '_kvp', true );
 			
 			if( false === $single ) {
 				
 				foreach( $posts_meta as $key => $post_meta ) {
 					
-					if( $post_meta['post_id'] != $audit_meta['post_id'] && $post_meta['video_id'] == $audit_meta['video_id'] && $post_meta['service'] == $audit_meta['service'] ) {
+					if( $post_meta['post_id'] != $post_id && $post_meta['video_id'] == $single_post_meta['video_id'] && $post_meta['service'] == $single_post_meta['service'] ) {
 						
-						if( $audit_meta['post_id'] < $post_meta['post_id'] ) {
+						if( $post_id < $post_meta['post_id'] ) {
+							
+							$results['duplicates']++;
 							
 							$success = wp_delete_post( $post_meta['post_id'], true );
 							
 							if( false === $success ) 
-								kvp_action_log( __( 'Failure to Delete Post', 'kvp' ), __( 'Post ID: ', 'kvp' ) . $post_meta['post_id'], __( 'Core Import', 'kvp' ) );
+								kvp_activity_log( __( 'Core Audit', 'kvp' ), 'error', array( 'message' => sprintf( __( 'Failure to Delete Duplicate Post: <em>%s</em>', 'kvp' ), $post_meta['post_id'] ) ) );
 							
-							else
-								kvp_action_log( __( 'Deleted Duplicate Post', 'kvp' ), __( 'Post ID: ', 'kvp' ) . $post_meta['post_id'], __( 'Core Import', 'kvp' ) );
+							else {
+								$results['deleted']++;
+								kvp_activity_log( __( 'Core Audit', 'kvp' ), 'notice', array( 'message' => sprintf( __( 'Deleted Duplicate Post: <em>%s</em>', 'kvp' ), $post_meta['post_id'] ) ) );
+							}
 							
 						} else {
-							kvp_action_log( __( 'Match IDs Skip', 'kvp' ), $audit_meta['post_id'] . ': ' . $post_meta['post_id'], __( 'Core Import', 'kvp' ) );
+							kvp_activity_log( __( 'Core Audit', 'kvp' ), 'notice', array( 'message' => sprintf( __( 'Skipped Matching IDs: <em>%s</em>', 'kvp' ), $post_id . ' - ' . $post_meta['post_id'] ) ) );
 							continue 2;
 							
 						}
@@ -106,187 +108,146 @@ class Katalyst_Video_Plus_Import {
 				
 			}
 			
-			if( false !== get_post_status($audit_meta['post_id']) )
-				$this->import( $audit_meta['post_id'] );
+			if( false !== get_post_status($post_id) ) {
+				
+				$service	= 'KVP_' . str_replace( ' ', '_', $this->services[$single_post_meta['service']]['label'] ) . '_Client';
+				$service	= new $service( $single_post_meta );
+				
+				$video_id	= $single_post_meta['video_id'];
+				$video_info = $service->get_video( $single_post_meta['video_id'] );
+				
+				if( empty($video_info) ) {
+					kvp_activity_log( __( 'Core Audit', 'kvp' ), 'error', sprintf( __( 'Video Request Error for video: %s in service: %s', 'kvp' ), '<i>' . $single_post_meta['video_id'] . '</i>', '<i>' . $single_post_meta['service'] . '</i>' ) );
+					continue;
+				}
+				
+				$this->process_post( array_merge( $video_info, $single_post_meta ), $post_id );
+				$results['total']++;
+				
+			}
 			
 		}
 		
-		if( false === $single )
-			kvp_action_log( __( 'Full Audit Completed', 'kvp' ), __( '', 'kvp' ), __( 'Core Import', 'kvp' ) );
+		$results['end_time'] = microtime(true);
+		
+		return $results;
 		
 	}
 	
 	/**
-	 * Initializes import for all accounts
+	 * Initializes import for all sources
 	 * 
 	 * @since 2.0.0
 	 */
-	public function import( $audit = false ) {
+	public function import( $source_id ) {
 		
-		if( false === $audit ) {
-			
-			if( 'locked' === get_transient( 'kvp_import_lock' ) )
-				return kvp_action_log( __( 'Import Cancelled', 'kvp' ), __( 'Import is already in progress.', 'kvp' ), __( 'Core Import', 'kvp' ) );
-			
-			kvp_action_log( __( 'Regular Import Begin', 'kvp' ), __( '', 'kvp' ), __( 'Core Import', 'kvp' ) );
-			
-			set_transient( 'kvp_import_lock', 'locked', ( 5 * 60 ) );
-			
-			$this->queue_videos();
+		if( empty($this->sources[$source_id]) || !isset($this->sources[$source_id]) )
+			return kvp_activity_log( __( 'Core Import', 'kvp' ), 'error', array( 'message' => sprintf( __( 'Source <em>%s</em> does not exist.', 'kvp' ), $source_id ) ) );
 		
-		} else {
+		if( 'inactive' == $this->sources[$source_id]['status'] )
+			return wp_unschedule_event( wp_next_scheduled( 'kvp_import_' . $source_id, array( $source_id ) ), 'kvp_import_' . $source_id, array( $source_id ) );
+		
+		$service = 'KVP_' . str_replace( ' ', '_', $this->services[$this->sources[$source_id]['service']]['label']) . '_Client';
+		
+		if( !class_exists($service) )
+			return kvp_activity_log( __( 'Core Import', 'kvp' ), 'error', array( 'message' => __( 'Class does not exist.', 'kvp' ) ) );
+		
+		$import_lock = get_transient( 'kvp_import_lock' );
+		
+		if( false !== $import_lock ) {
 			
-			$this->queue[0] = get_post_meta( $audit, '_kvp', true );
+			if( $import_lock == $source_id )
+				return false;
 			
-			if( isset( $this->queue[0]['last_audit'] ) && ( ( 60 * 60 ) > ( current_time( 'timestamp', true ) - $this->queue[0]['last_audit'] ) ) )
-				return true;
+			wp_unschedule_event( wp_next_scheduled( 'kvp_import_' . $source_id, array( $source_id ) ), 'kvp_import_' . $source_id, array( $source_id ) );
+			wp_schedule_single_event( time() + ( 6 * 60 ), 'kvp_import_' . $source_id, array( $source_id ) );
+			
+			return kvp_activity_log( __( 'Core Import', 'kvp' ), 'notice', array( 'message' => sprintf( __( 'Import for another source already in progress. This source rescheduled: <em>%s</em>', 'kvp' ), $source_id ) ) );
+		}
+		
+		set_transient( 'kvp_import_lock', $source_id, ( 5 * 60 ) );
+		
+		$start_time = microtime(true);
+		
+		$service = new $service( $this->sources[$source_id] );
+		$results = $service->get_videos();
+		$queue 	 = isset($results['items']) ? $results['items'] : array();
+		
+		if( is_wp_error( $results ) ) {
+			
+			kvp_activity_log( sprintf( __( 'Queue Video Request Error for name %s Service: %s', 'kvp' ), '<em>' . $source['name'] . '</em>', '<em>' . $source['service'] . '</em>' ), $video_ids, __( 'Core Import', 'kvp' ) );
+			continue;
 			
 		}
 		
-		foreach( $this->queue as $key => $item ) {
-			
-			if( isset($this->accounts[$item['account']]) && ( !isset($this->accounts[$item['account']]['ext_status']) || !isset($this->accounts[$item['account']]['ext_status']['video']) || 'active' != $this->accounts[$item['account']]['ext_status']['video'] ) ) {
-				unset( $this->queue[$key] );
-				
-				if( !kvp_in_test_mode() )
-					update_option( 'kvp_queue', $this->queue );
-				
-				continue;
-			}
-				
-			if( false === $audit )
-				set_transient( 'kvp_import_lock', 'locked', ( 5 * 60 ) );
-			
-			$account = ( isset($this->accounts[$item['account']]) ) ? $this->accounts[$item['account']] : $item;
-			
-			if( !isset($this->services[$item['service']]) ) {
-				kvp_action_log( __( 'Invalid Service', 'kvp' ), __( 'Could not find "' . $item['service'] . '"" service.', 'kvp' ), __( 'Core Import', 'kvp' ) );
-				continue;
-			}
-			
-			$service	= 'KVP_' . str_replace( ' ', '_', $this->services[$item['service']]['label'] ) . '_Client';
-			$service	= new $service( $account );
-			
-			$video_info = $service->get_video( $item['video_id'] );
-			
-			if( is_wp_error( $video_info ) ) {
-				
-				kvp_action_log( sprintf( __( 'Video Info Request Error for Video ID: %s under Service: %s and username: %s', 'kvp'), '<i>' . $item['video_id'] . '</i>', '<i>' . $item['service'] . '</i>', '<i>' . $item['username'] . '</i>' ), $video_info, __( 'Core Import', 'kvp' ) );
-				continue;
-				
-			}
-			
-			$post_id = $this->process_post( $video_info, $item, $audit );
-			
-			$post_meta = get_post_meta( $post_id, '_kvp', true );
-			
-			add_action( 'kvp_' . $item['service'] . '_import', array( $this, 'process_featured_image' ), 10, 3 );
-			
-			do_action( 'kvp_' . $item['service'] . '_import', $post_id, $video_info, $post_meta );
-			
-			unset( $this->queue[$key] );
-			
-			if( false === $audit && !kvp_in_test_mode() )
-				update_option( 'kvp_queue', $this->queue );
-			
-		}
-		
-		if( false === $audit )
+		if( !isset($results['items']) ) {
 			delete_transient('kvp_import_lock');
+			return kvp_activity_log( __( 'Core Import', 'kvp' ), 'error', array( 'message' => sprintf( __( 'The service %s did not return items.', 'kvp' ), '<em>' . $source['service'] . '</em>' ) ) );
+		}
 		
-		if( false !== $audit )
-			return;
-		
-		kvp_action_log( __( 'Regular Import Completed', 'kvp' ), __( '', 'kvp' ), __( 'Core Import', 'kvp' ) );
-	}
-	
-	/**
-	 * Returns list of all meta data for KVP posts
-	 * 
-	 * @since 2.0.0
-	 * @return array Contains all posts meta for KVP posts
-	 */
-	private function get_posts_meta() {
-		global $wpdb;
-		
-		$posts_meta = $wpdb->get_col( $wpdb->prepare( "SELECT pm.meta_value FROM {$wpdb->postmeta} pm LEFT JOIN {$wpdb->posts} p ON p.ID = pm.post_id WHERE pm.meta_key = '%s'", '_kvp') );
-		$new_meta	= array();
-		
-		foreach( $posts_meta as $post_meta ) {
+		foreach( $queue as $key => $video_info ) {
+				
+			set_transient( 'kvp_import_lock', $source_id, ( 5 * 60 ) );
 			
-			$new_meta[] = unserialize( $post_meta );
+			$service	= 'KVP_' . str_replace( ' ', '_', $this->services[$this->sources[$source_id]['service']]['label'] ) . '_Client';
+			$service	= new $service( $this->sources[$source_id] );
+			
+			$video_id	= $video_info['id'];
+			$video_info = $service->get_video( $video_id );
+			
+			if( empty($video_info) )
+				kvp_activity_log( __( 'Core Import', 'kvp' ), 'error', sprintf( __( 'Video Request Error for video: %s in service: %s', 'kvp' ), '<i>' . $video_id . '</i>', '<i>' . $this->sources[$source_id]['service'] . '</i>' ) );
+			
+			$post_id = $this->process_post( array_merge( $this->sources[$source_id], array( 'video_id' => $video_id ), $video_info ) );
+			
+			unset( $queue[$key] );
 			
 		}
 		
-		return $new_meta;
+		delete_transient('kvp_import_lock');
+		
+		$end_time = microtime(true);
+		
+		return array_merge( $results['page_info'], array( 'source_id' => $source_id, 'start_time' => $start_time, 'end_time' => $end_time ) );
 		
 	}
 	
-	/**
-	 * Adds videos to import queue
-	 * 
-	 * @since 2.0.0
-	 */
-	private function queue_videos() {
+	public function test_source( $source ) {
 		
-		$this->queue = get_option( 'kvp_queue', array() );
+		$results = array(
+			'page_info' => array(
+				'scanned' => 0,
+				'duplicates' => 0,
+				'total'	=> 0,
+				'execution_time' => 0,
+			),
+			'items' => array(),
+		);
 		
-		if( empty($this->queue) ) {
+		if( !isset($this->services[$source['service']]) )
+			return $results;
+		
+		$service	= 'KVP_' . str_replace( ' ', '_', $this->services[$source['service']]['label']) . '_Client';
+		
+		if( !class_exists($service) ) {
 			
-			foreach ( $this->accounts as $id => $info ) {
-				
-				if( !isset($info['ext_status']) || !isset($info['ext_status']['video']) || 'active' != $info['ext_status']['video'] )
-					continue;
-				
-				$service	= 'KVP_' . str_replace( ' ', '_', $this->services[$info['service']]['label']) . '_Client';
-				
-				if( !class_exists($service) ) {
-					
-					kvp_action_log( __( 'Class does not exist.', 'kvp' ), $service, __( 'Core Import', 'kvp' ) );
-					continue;
-					
-				}
-				
-				$service	= new $service( $info );
-				$video_ids	= $service->get_videos();
-				
-				if( is_wp_error( $video_ids ) ) {
-					
-					kvp_action_log( sprintf( __( 'Queue Video Request Error for Service: %s and username: %s', 'kvp' ), '<i>' . $info['service'] . '</i>', '<i>' . $info['username'] . '</i>' ), $video_ids, __( 'Core Import', 'kvp' ) );
-					continue;
-					
-				}
-				
-				$posts_meta = $this->get_posts_meta();
-				
-				foreach( $posts_meta as $post_meta ) {
-					
-					$search_key = array_search( $post_meta['video_id'], $video_ids );
-					
-					if( false !== $search_key && $post_meta['service'] == $info['service'] && $post_meta['username'] == $info['username'] )
-						unset( $video_ids[$search_key] );
-					
-				}
-				
-				foreach( $video_ids as $video_id ) {
-					
-					$this->queue[] = array(
-						'account'	=> $id,
-						'video_id'	=> $video_id,
-						'service'	=> $info['service'],
-						'username'	=> $info['username'],
-					);
-					
-				}
-				
-				if( !kvp_in_test_mode() )
-					update_option( 'kvp_queue', $this->queue );
-				
-			}
+			kvp_activity_log( __( 'Class does not exist.', 'kvp' ), $service, __( 'Core Import', 'kvp' ) );
+			continue;
 			
-			return $this->queue;
-		
 		}
+		
+		$start_time = microtime(true);
+		
+		$service = new $service( $source );
+		$videos = $service->get_videos();
+		
+		if( is_wp_error( $videos ) )
+			return kvp_activity_log( sprintf( __( 'Test Video Request Error for Service: %s and username: %s', 'kvp' ), '<i>' . $source['service'] . '</i>', '<i>' . $source['name'] . '</i>' ), $video_ids, __( 'Core Import', 'kvp' ) );
+		
+		$results = array_merge( $results, $videos );
+		$results['page_info']['execution_time'] = round( microtime(true) - $start_time, 4);
+		
+		return $results;
 		
 	}
 	
@@ -296,39 +257,73 @@ class Katalyst_Video_Plus_Import {
 	 * @since 2.0.0
 	 * @return array Contains post meta for the post created
 	 */
-	private function process_post( $video_info, $item, $post_id ) {
+	private function process_post( $video_info, $post_id = false ) {
 		
-		$account	= ( isset($item['account']) ) ? $this->accounts[$item['account']] : array( 'ID' => null, 'username' => null );
-		$post_date	= apply_filters( 'kvp_' . $item['service'] . '_post_date', current_time( 'mysql' ), $video_info );
+		if( !isset($this->services[$video_info['service']]) )
+			return kvp_activity_log( __( 'Invalid Service', 'kvp' ), __( 'Could not find "' . $video_info['service'] . '"" service.', 'kvp' ), __( 'Core Import', 'kvp' ) );
+		
+		$service	= 'KVP_' . str_replace( ' ', '_', $this->services[$video_info['service']]['label'] ) . '_Client';
+		$service	= new $service( $video_info['service'] );
+		
+		if( is_wp_error( $video_info ) )
+			return kvp_activity_log( sprintf( __( 'Video Info Request Error for Video ID: %s under Service: %s and username: %s', 'kvp'), '<i>' . $video_info['video_id'] . '</i>', '<i>' . $video_info['service'] . '</i>', '<i>' . $video_info['username'] . '</i>' ), $video_info, __( 'Core Import', 'kvp' ) );
+		
+		$post_date	= apply_filters( 'kvp_' . $video_info['service'] . '_post_date', current_time( 'mysql' ), $video_info );
+		
+		$post_status = ( isset($video_info['publish']) ) ? $video_info['publish'] : 'publish';
 		
 		$post = array(
-			'post_title'	=> apply_filters( 'kvp_' . $item['service'] . '_post_title', '', $video_info ),
-			'post_content'	=> apply_filters( 'kvp_' . $item['service'] . '_post_content', '', $video_info ),
-			'post_status'	=> apply_filters( 'kvp_' . $item['service'] . '_post_status', 'publish', $video_info ),
+			'post_title'	=> apply_filters( 'kvp_' . $video_info['service'] . '_post_title', '', $video_info ),
+			'post_content'	=> apply_filters( 'kvp_' . $video_info['service'] . '_post_content', '', $video_info ),
+			'post_status'	=> apply_filters( 'kvp_' . $video_info['service'] . '_post_status', $post_status, $video_info ),
+			'post_type'		=> 'kvp_video',
 			'post_date'		=> get_date_from_gmt( date('Y-m-d H:i:s', strtotime($post_date)), 'Y-m-d H:i:s'),
 			'post_date_gmt'	=> date('Y-m-d H:i:s', strtotime($post_date) ),
 		);
 		
-		if( isset($account['author']) )
-			$post['post_author'] = $account['author'];
+		if( isset($video_info['author']) )
+			$post['post_author'] = $video_info['author'];
 		
-		if( isset($account['categories']) )
-			$post['post_category'] = $account['categories'];
+		if( isset($video_info['tax_input']['kvp_video_category']) )
+			$post['tax_input']['kvp_video_category'] = $video_info['tax_input']['kvp_video_category'];
 		
-		$post = apply_filters( 'kvp' . $item['service'] . '_post', $post );
+		$post = apply_filters( 'kvp' . $video_info['service'] . '_post', $post );
 		
 		if( kvp_in_test_mode() )
-			return kvp_action_log( sprintf( __( 'Post Creation Ready for Service: %s and username: %s', 'kvp' ), '<i>' . $item['service'] . '</i>', '<i>' . $item['username'] . '</i>' ), $post, __( 'Core Import', 'kvp' ) );
+			return kvp_activity_log( __( 'Core Import', 'kvp' ), 'notice', array( 'message' => sprintf( __( 'Post Creation Ready for Service: %s', 'kvp' ), '<i>' . $video_info['service'] . '</i>' ) ) );
 		
 		if( is_int($post_id) )
 			$post = array_merge( array( 'ID' => $post_id ), $post );
+
+		$post_id = ( !$post_id ) ? wp_insert_post( $post ) : wp_update_post( $post );
 		
-		$post_id = ( !isset($post['ID']) ) ? wp_insert_post( $post ) : wp_update_post( $post );
+		$post_meta = array( 'post_id' => $post_id, 'video_id' => $video_info['video_id'], 'service' => $video_info['service'], 'last_audit' => time() );
 		
-		if( isset($this->settings['import_post_format']) )
-			set_post_format( $post_id, $this->settings['import_post_format'] );
+		if( isset($video_info['tax_input']['kvp_video_category']) )
+			$post_meta = array_merge( $post_meta, array( 'tax_input' => array( 'kvp_video_category' => $video_info['tax_input']['kvp_video_category'] ) ) );
 		
-		update_post_meta( $post_id, '_kvp', array( 'post_id' => $post_id, 'video_id' => $item['video_id'], 'account' => $account['ID'],  'service' => $item['service'], 'username' => $account['username'], 'last_audit' => time() ) );
+		update_post_meta( $post_id, '_kvp', $post_meta );
+		
+		if( defined('DOING_CRON') && ! empty( $post['tax_input'] ) ) {
+			
+			foreach ( $post['tax_input'] as $taxonomy => $tags ) {
+				
+				$taxonomy_obj = get_taxonomy($taxonomy);
+				
+				if ( is_array( $tags ) )
+					$tags = array_filter($tags);
+				
+				$tags = array_map( 'intval', $tags );
+				
+				wp_set_object_terms( $post_id, $tags, $taxonomy );
+				
+			}
+			
+		}
+		
+		add_action( 'kvp_' . $video_info['service'] . '_import', array( $this, 'process_featured_image' ), 10, 3 );
+		
+		do_action( 'kvp_' . $video_info['service'] . '_import', $post_id, $video_info, $post_meta );
 		
 		return $post_id;
 		
@@ -348,7 +343,7 @@ class Katalyst_Video_Plus_Import {
 			return true;
 		
 		if( kvp_in_test_mode() )
-			return kvp_action_log( __( 'Post Featured Image', 'kvp' ), $video_thumb, __( 'Core Import', 'kvp' ) );
+			return kvp_activity_log( __( 'Post Featured Image', 'kvp' ), $video_thumb, __( 'Core Import', 'kvp' ) );
 		
 		$upload_dir = wp_upload_dir();
 		
@@ -377,13 +372,13 @@ class Katalyst_Video_Plus_Import {
 		$upload = $this->fetch_remote_file( $url, $post );
 		
 		if( is_wp_error( $upload ) )
-			return kvp_action_log( __( 'Attachment Upload Error', 'kvp' ), $upload, __( 'Core Import', 'kvp' ) );
+			return kvp_activity_log( __( 'Attachment Upload Error', 'kvp' ), $upload, __( 'Core Import', 'kvp' ) );
 		
 		if( $info = wp_check_filetype( $upload['file'] ) )
 			$post['post_mime_type'] = $info['type'];
 		
 		else
-			return kvp_action_log( __( 'Attachment Processing Error', 'kvp' ), __( 'Invalid file type.', 'kvp' ), __( 'Core Import', 'kvp' ) );
+			return kvp_activity_log( __( 'Attachment Processing Error', 'kvp' ), __( 'Invalid file type.', 'kvp' ), __( 'Core Import', 'kvp' ) );
 		
 		$post['guid'] = $upload['url'];
 		
@@ -408,19 +403,19 @@ class Katalyst_Video_Plus_Import {
 		$upload = wp_upload_bits( $file_name, 0, '', $post['upload_date'] );
 		
 		if( $upload['error'] )
-			return kvp_action_log( __( 'Import File Error', 'kvp' ), $upload['error'], __( 'Core Import', 'kvp' ) );
+			return kvp_activity_log( __( 'Import File Error', 'kvp' ), $upload['error'], __( 'Core Import', 'kvp' ) );
 		
 		$headers = wp_get_http( $url, $upload['file'] );
 		
 		if( !$headers ) {
 			@unlink( $upload['file'] );
-			return kvp_action_log( __( 'Import File Error', 'kvp' ), __( 'Remote server did not respond.', 'kvp' ), __( 'Core Import', 'kvp' ) );
+			return kvp_activity_log( __( 'Import File Error', 'kvp' ), __( 'Remote server did not respond.', 'kvp' ), __( 'Core Import', 'kvp' ) );
 		}
 		
 		if( '200' != $headers['response'] ) {
 			
 			@unlink( $upload['file'] );
-			return kvp_action_log( __( 'Import File Error', 'kvp' ), sprintf( __('Remote server returned error response %d %s.', 'kvp'), esc_html($headers['response']), get_status_header_desc($headers['response']) ), __( 'Core Import', 'kvp' ) );
+			return kvp_activity_log( __( 'Import File Error', 'kvp' ), sprintf( __('Remote server returned error response %d %s.', 'kvp'), esc_html($headers['response']), get_status_header_desc($headers['response']) ), __( 'Core Import', 'kvp' ) );
 			
 		}
 		
@@ -429,13 +424,13 @@ class Katalyst_Video_Plus_Import {
 		if ( isset( $headers['content-length'] ) && $file_size != $headers['content-length'] ) {
 			
 			@unlink( $upload['file'] );
-			return kvp_action_log( __( 'Import File Error', 'kvp' ), __( 'Remote file is incorrect size.', 'kvp' ), __( 'Core Import', 'kvp' ) );
+			return kvp_activity_log( __( 'Import File Error', 'kvp' ), __( 'Remote file is incorrect size.', 'kvp' ), __( 'Core Import', 'kvp' ) );
 			
 		}
 
 		if ( 0 == $file_size ) {
 			@unlink( $upload['file'] );
-			return kvp_action_log( __( 'Import File Error', 'kvp' ), __( 'Zero size file downloaded.', 'kvp' ), __( 'Core Import', 'kvp' ) );
+			return kvp_activity_log( __( 'Import File Error', 'kvp' ), __( 'Zero size file downloaded.', 'kvp' ), __( 'Core Import', 'kvp' ) );
 		}
 		
 		return $upload;

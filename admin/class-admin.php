@@ -21,7 +21,7 @@ class Katalyst_Video_Plus_Admin {
 	private $name;
 	
 	/**
-	 * The ID of this plugin.
+	 * The slug of this plugin.
 	 *
 	 * @since    2.0.0
 	 * @access   private
@@ -75,7 +75,13 @@ class Katalyst_Video_Plus_Admin {
 	public function enqueue_styles() {
 
 		wp_enqueue_style( $this->slug, plugin_dir_url( dirname( __FILE__ ) ) . '/assets/css/kvp-admin.css', array(), $this->version, 'all' );
-
+		
+		if( isset($_GET['page']) && 'kvp-sources' == $_GET['page'] ) {
+			
+			wp_enqueue_style( 'jquery-timepicker', plugin_dir_url( dirname( __FILE__ ) ) . '/assets/css/jquery.timepicker.css', array(), '1.6.0', 'all' );
+			
+		}
+		
 	}
 
 	/**
@@ -88,10 +94,11 @@ class Katalyst_Video_Plus_Admin {
 		wp_enqueue_script( $this->slug, plugin_dir_url( dirname( __FILE__ ) ) . 'assets/js/kvp-admin.js', array( 'jquery' ), $this->version, false );
 		wp_enqueue_script( $this->slug . '-chart', plugin_dir_url( dirname( __FILE__ ) ) . 'assets/js/chart.min.js', array( 'jquery' ), '1.0.1-beta.4', false );
 		
-		if( isset($_GET['page']) && 'kvp-accounts' == $_GET['page'] ) {
+		if( isset($_GET['page']) && 'kvp-sources' == $_GET['page'] ) {
 			
 			wp_enqueue_script( 'post' );
 			wp_enqueue_script( 'kvp-inline-edit', plugins_url( 'assets/js/inline-edit.js' , dirname(__FILE__ ) ), array('jquery'), null, true );
+			wp_enqueue_script( 'jquery-timepicker', plugins_url( 'assets/js/jquery.timepicker.min.js' , dirname(__FILE__ ) ), array('jquery'), '1.6.0', true );
 			
 		}
 
@@ -104,14 +111,14 @@ class Katalyst_Video_Plus_Admin {
 	 */
 	public function setup_menu() {
 		
-		$menu_slug = 'kvp-dashboard';
+		add_dashboard_page( __( 'Welcome to Katalyst Video Plus', 'kvp' ), __( 'Welcome to Katalyst Video Plus', 'kvp' ), 'read', 'kvp-about', array( $this, 'about_screen' ) );
 		
-		$admin_page = add_menu_page( __( 'KVP Dashboard', 'kvp' ), 'Video Plus' . $this->get_error_count(), 'import', $menu_slug, array( $this, 'view_dashboard' ), 'dashicons-video-alt3', 76 );
+		$menu_slug = 'edit.php?post_type=kvp_video';
 		
 		$default_submenu = array(
-			array( __( 'Dashboard', 'kvp' ), __( 'Dashboard', 'kvp' ), 'import', $menu_slug, array( $this, 'view_dashboard' ) ),
-			array( __( 'Accounts', 'kvp' ), __( 'Accounts', 'kvp' ) . $this->get_error_count('accounts'), 'import', 'kvp-accounts', array( $this, 'view_accounts' ) ),
-			array( __( 'Log', 'kvp' ), __( 'Log', 'kvp' ) . $this->get_error_count('log'), 'import', 'kvp-log', array( $this, 'view_log' ) ),
+			array( __( 'Sources', 'kvp' ), __( 'Sources', 'kvp' ), 'import', 'kvp-sources', array( $this, 'view_sources' ) ),
+			array( __( 'Activity Log', 'kvp' ), __( 'Activity Log', 'kvp' ), 'import', 'kvp-activity-log', array( $this, 'view_activity_log' ) ),
+			//array( __( 'Statistics', 'kvp' ), __( 'Statistics', 'kvp' ), 'import', 'kvp-statistics', array( $this, 'view_statistics' ) ),
 			array( __( 'Settings', 'kvp' ), __( 'Settings', 'kvp' ), 'manage_options', 'kvp-settings', array( $this, 'view_settings' ) ),
 		);
 		
@@ -123,72 +130,57 @@ class Katalyst_Video_Plus_Admin {
 	}
 	
 	/**
-	 * Registers top-level page and all sub pages.
-	 *
-	 * @since    2.0.0
+	 * Removes about page item from menu
+	 * 
+	 * @since 3.0.0
 	 */
-	public function get_error_count( $section = false ) {
+	public function remove_about_menu() {
 		
-		$errors = 0;
+		remove_submenu_page( 'index.php', 'kvp-about' );
 		
-		// Check accounts
-		if( in_array( $section, array( false, 'accounts' ) ) ) {
-			
-			$accounts = get_option( 'kvp_accounts', array() );
-			$services = apply_filters( 'kvp_services', array() );
-			
-			foreach( $accounts as $account ) {
-				
-				if( !isset($services[$account['service']]) ) {
-					++$errors;
-					continue;
-				}
-		        	
-	        	$service = 'KVP_' . str_replace( ' ', '_', $services[$account['service']]['label']) . '_Client';
-	        	
-	        	if( class_exists($service) ) {
-	        		$service = new $service( $account );
-	        		$status = $service->check_status();
-	        		
-	        		if( 'Successful Connection' !== $status ) {
-						++$errors;
-						continue;
-	        		}
-	        	}
-		        
-		    }
-		    
-		}
+	}
+	
+	/**
+	 * Redirects to about page on activation
+	 * 
+	 * @since 3.0.0
+	 */
+	public function about_screen_redirect() {
 		
-		if( 0 == $errors )
+		if ( ! get_transient( '_kvp_about_screen' ) )
 			return;
 		
-		return sprintf( '<span class="update-plugins count-%1$d" title="%2$s"><span class="update-count">%1$d</span></span>', $errors, __('Import Errors', 'kvp') );
-
-	}
-	
-	/**
-	 * Displays Dashboard
-	 *
-	 * @since    2.0.0
-	 */
-	public function view_dashboard() {
+		delete_transient( '_kvp_about_screen' );
 		
-		include 'partials/view-dashboard.php';
+		if ( is_network_admin() || isset( $_GET['activate-multi'] ) )
+			return;
+		
+		wp_safe_redirect( add_query_arg( array( 'page' => 'kvp-about' ), admin_url( 'index.php' ) ) );
 		
 	}
 	
 	/**
-	 * Displays accounts
-	 *
-	 * @since    2.0.0
+	 * Displays about page
+	 * 
+	 * @since 3.0.0
 	 */
-	public function view_accounts() {
+	public function about_screen() {
+		
+		include 'partials/view-about-screen.php';
+		
+	}
+	
+	/**
+	 * Displays sources
+	 *
+	 * @since    3.0.0
+	 */
+	public function view_sources() {
 		
 		if( current_user_can( 'import' ) ) {
 		
-			include_once 'class-accounts-table.php';
-			include 'partials/view-accounts.php';
+			include_once 'class-sources-table.php';
+			include 'partials/view-sources.php';
 			
 		}
 		
@@ -197,12 +189,23 @@ class Katalyst_Video_Plus_Admin {
 	/**
 	 * Displays log of events occuring within KVP
 	 *
-	 * @since    2.0.0
+	 * @since    3.0.0
 	 */
-	public function view_log() {
+	public function view_activity_log() {
 		
-		include_once 'class-action-log-table.php';
-		include 'partials/view-log.php';
+		include_once 'class-activity-log-table.php';
+		include 'partials/view-activity-log.php';
+		
+	}
+	
+	/**
+	 * Displays Statistics
+	 *
+	 * @since    3.0.0
+	 */
+	public function view_statistics() {
+		
+		include 'partials/view-statistics.php';
 		
 	}
 	
@@ -226,11 +229,12 @@ class Katalyst_Video_Plus_Admin {
 	public function setup_meta_boxes() {
 		
 		$default_meta_boxes = array(
-			array( 'kvp-statistics', __( 'Operation Statistics', 'kvp' ), array( new Katalyst_Video_Plus_Meta_Boxes, 'statistics' ), 'kvp_dashboard', 'normal', 'default', null ),
-			array( 'kvp-system-info', __( 'Katalyst Video Plus Status', 'kvp' ), array( new Katalyst_Video_Plus_Meta_Boxes, 'system_info' ), 'kvp_dashboard', 'side', 'default', null ),
-			array( 'kvp-rate-us', __( 'Rate Katalyst Video Plus', 'kvp' ), array( new Katalyst_Video_Plus_Meta_Boxes, 'rate_us' ), 'kvp_dashboard', 'side', 'default', null ),
-			//array( 'kvp-extensions', __( 'Random Extension', 'kvp' ), array( new Katalyst_Video_Plus_Meta_Boxes, 'extensions' ), 'kvp_dashboard', 'side', 'default', null ),
-			array( 'kvp-connect-account', __( 'Connect Account', 'kvp' ), array( new Katalyst_Video_Plus_Meta_Boxes, 'connect_account' ), 'kvp_accounts', 'side', 'default', null ),
+			array( 'kvp-statistics', __( 'Operation Statistics', 'kvp' ), array( new Katalyst_Video_Plus_Meta_Boxes, 'statistics' ), 'kvp_statistics', 'normal', 'default', null ),
+			array( 'kvp-stress-forecast', __( 'Stress Forecast', 'kvp' ), array( new Katalyst_Video_Plus_Meta_Boxes, 'stress_forecast' ), 'kvp_statistics', 'normal', 'default', null ),
+			array( 'kvp-system-info', __( 'Katalyst Video Plus Status', 'kvp' ), array( new Katalyst_Video_Plus_Meta_Boxes, 'system_info' ), 'kvp_statistics', 'side', 'default', null ),
+			array( 'kvp-rate-us', __( 'Rate Katalyst Video Plus', 'kvp' ), array( new Katalyst_Video_Plus_Meta_Boxes, 'rate_us' ), 'kvp_statistics', 'side', 'default', null ),
+			//array( 'kvp-extensions', __( 'Random Extension', 'kvp' ), array( new Katalyst_Video_Plus_Meta_Boxes, 'extensions' ), 'kvp_statistics', 'side', 'default', null ),
+			array( 'kvp-connect-source', __( 'Connect Source', 'kvp' ), array( new Katalyst_Video_Plus_Meta_Boxes, 'connect_source' ), 'kvp_sources', 'side', 'default', null ),
 		);
 		
 		$meta_boxes = apply_filters( 'kvp_meta_boxes', $default_meta_boxes );
@@ -241,18 +245,42 @@ class Katalyst_Video_Plus_Admin {
 	}
 	
 	/**
-	 * Ajax function for editing account.
+	 * Ajax function for editing source.
 	 *
 	 * @since    2.0.0
 	 */
-	public function edit_account_ajax() {
+	public function edit_source_ajax() {
 		
-		include_once 'class-accounts-table.php';
+		include_once 'class-sources-table.php';
 		
 		ob_clean();
 		
-		$accounts = new KVP_Accounts_Table();
-		$accounts->edit_account();
+		$sources = new KVP_Sources_Table();
+		$sources->edit_source();
+		
+	}
+	
+	/**
+	 * Ajax function for testing source.
+	 * 
+	 * @since 3.0.0
+	 */
+	public function test_source_ajax() {
+		
+		$services	= apply_filters( 'kvp_services', array() );
+		$sources	= get_option( 'kvp_sources', array() );
+		
+		if( !isset($_GET['id']) || !isset($sources[$_GET['id']]) )
+			die('<div class="no-video-results">' . __( 'Source does not exist.', 'kvp' ) . '</div>');
+		
+		$source	= $sources[$_GET['id']];
+		
+		$kvp_source_test = new Katalyst_Video_Plus_Import;
+		$results = $kvp_source_test->test_source( $source );
+		
+		include_once 'partials/view-source-test.php';
+		
+		die();
 		
 	}
 

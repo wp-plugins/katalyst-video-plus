@@ -18,19 +18,30 @@ class Katalyst_Video_Plus_CRON {
 	 */
 	public function setup_cron() {
 		
-		$settings = get_option( 'kvp_settings', array() );
+		$settings	= get_option( 'kvp_settings', array() );
+		$sources	= get_option( 'kvp_sources', array() );
+		$schedules	= wp_get_schedules();
 		
-		$import_schedule	= isset($settings['import_schedule']) ? $settings['import_schedule'] : 'hourly';
 		$audit_schedule		= isset($settings['audit_schedule']) ? $settings['audit_schedule'] : 'daily';
 		
-		if( !wp_next_scheduled('kvp_import_cron') )
-			wp_schedule_event( time() + ( 60 * 60 ), $import_schedule, 'kvp_import_cron' );
-		
-		elseif( is_admin() && isset( $_POST['_kvp_import_nonce'] ) && wp_verify_nonce( $_POST['_kvp_import_nonce'], 'kvp_force_import' ) ) {
+		foreach( $sources as $source ) {
 			
-            wp_unschedule_event( wp_next_scheduled('kvp_import_cron'), 'kvp_import_cron' );
-            wp_schedule_single_event( time() - 1, 'kvp_import_cron' );
+			if( !wp_next_scheduled( 'kvp_import_' . $source['id'], array( $source['id'] ) ) && ( 'active' == $source['status'] ) ) {
 				
+				$schedule	= isset($schedules[$source['schedule_freq']]) ? $source['schedule_freq'] : 'hourly';
+				$time		= ( isset($source['schedule_time']) && 3600 < $schedules[$schedule]['interval'] ) ? ( $source['schedule_time'] + $schedules[$schedule]['interval'] ) : time() + $schedules[$schedule]['interval'];
+				wp_schedule_event( $time, $schedule, 'kvp_import_' . $source['id'], array( $source['id'] ) );
+				
+			} elseif( is_admin() && isset( $_POST['_kvp_import_nonce'] ) && wp_verify_nonce( $_POST['_kvp_import_nonce'], 'kvp_force_import' ) ) {
+
+				wp_unschedule_event( wp_next_scheduled( 'kvp_import_' . $source['id'], array( $source['id'] ) ), 'kvp_import_' . $source['id'], array( $source['id'] ) );
+				wp_schedule_single_event( time() - 1, 'kvp_import_' . $source['id'], array( $source['id'] ) );
+				
+			}
+			
+			if( wp_next_scheduled( 'kvp_import_' . $source['id'], array( $source['id'] ) ) && ( 'inactive' == $source['status'] ) )
+				wp_unschedule_event( wp_next_scheduled( 'kvp_import_' . $source['id'], array( $source['id'] ) ), 'kvp_import_' . $source['id'], array( $source['id'] ) );
+			
 		}
 		
 		if( !wp_next_scheduled('kvp_audit_cron') )
@@ -53,10 +64,13 @@ class Katalyst_Video_Plus_CRON {
 	 * 
 	 * @since 2.0.0
 	 */
-	public function import_event() {
+	public function import_event( $source_id ) {
 		
 		$kvp_youtube_import = new Katalyst_Video_Plus_Import;
-		$kvp_youtube_import->import();
+		$results = $kvp_youtube_import->import( $source_id );
+		
+		if( false !== $results )
+			kvp_activity_log( __( 'Core Import' ), 'automatic', $results );
 		
 	}
 	
@@ -68,7 +82,10 @@ class Katalyst_Video_Plus_CRON {
 	public function audit_event() {
 		
 		$kvp_youtube_import = new Katalyst_Video_Plus_Import;
-		$kvp_youtube_import->audit();
+		$results = $kvp_youtube_import->audit();
+		
+		if( false !== $results )
+			kvp_activity_log( __( 'Core Import' ), 'audit', $results );
 		
 	}
 	
@@ -81,29 +98,26 @@ class Katalyst_Video_Plus_CRON {
 		
 		$settings = get_option( 'kvp_settings', array() );
 		
-		if( 'locked' === get_transient( 'kvp_import_lock' ) || ( isset($settings['purge_log']) && 'false' == $settings['purge_log'] ) )
-			return;
-		
-		if( !isset($settings['purge_log']) || ( isset($settings['purge_log']) && false === $settings['purge_log'] ) )
-			return;
+		if( !isset($settings['purge_log']) )
+			$settings['purge_log'] = 1;
 		
 		$limit = ( $settings['purge_log'] * 24 * 60 * 60 );
 		
-		$action_log = get_option( 'kvp_action_log', array() );
+		$activity_log = get_option( 'kvp_activity_log', array() );
 		
-		foreach( $action_log as $key => $item ) {
+		foreach( $activity_log as $key => $item ) {
 			
 			$time_diff = ( time() - $item['date'] );
 			
 			if( $limit < $time_diff ) {
 				
-				unset($action_log[$key]);
-				update_option( 'kvp_action_log', $action_log );
+				unset($activity_log[$key]);
 				
 			}
 			
-			
 		}
+		
+		update_option( 'kvp_activity_log', $activity_log );
 		
 	}
 	

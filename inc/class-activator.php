@@ -19,6 +19,7 @@ class Katalyst_Video_Plus_Activator {
 	 */
 	public static function activate() {
 		
+		set_transient( '_kvp_about_screen', true, 30 );
 		kvp_purge_cron();
 		
 	}

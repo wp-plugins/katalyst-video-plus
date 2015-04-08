@@ -20,6 +20,16 @@ class Katalyst_Video_Plus_Meta_Boxes {
 		include( 'partials/meta-box-statistics.php' );
 		
 	}
+	/**
+	 * Displays KVP stress forecast
+	 *
+	 * @since    2.0.0
+	 */
+	public function stress_forecast() {
+		
+		include( 'partials/meta-box-stress-forecast.php' );
+		
+	}
 	
 	/**
 	 * Displays system information on dashboard
@@ -59,14 +69,20 @@ class Katalyst_Video_Plus_Meta_Boxes {
 	 *
 	 * @since    2.0.0
 	 */
-	public function connect_account() {
+	public function connect_source() {
 		
 		include_once( ABSPATH . 'wp-admin/includes/meta-boxes.php' );
 		
-		$category_args = array();
+		$category_args = array( 'args' => array( 'taxonomy' => 'kvp_video_category' ) );
 		$services = apply_filters( 'kvp_services', array() );
+		$services_types = array();
 		
-		include( 'partials/meta-box-connect-account.php' );
+		foreach( $services as $service => $settings )
+			$services_types[$service]['types'] = $settings['types'];
+		
+		$types = apply_filters( 'kvp_source_types', kvp_get_source_types() );
+		
+		include( 'partials/meta-box-connect-source.php' );
 		
 	}
 	

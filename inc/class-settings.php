@@ -110,6 +110,13 @@ class Katalyst_Video_Plus_Settings {
 				
 				array(
 					
+					'show_videos_in_main_query' => array(
+						'id'	=> 'show_videos_in_main_query',
+						'name'	=> __( 'Show Video in Blog', 'kvp' ),
+						'desc'	=> __( 'If checked, videos will be included in the blog.', 'kvp' ),
+						'type'	=> 'checkbox'
+					),
+					
 					'show_video_in_lists' => array(
 						'id'	=> 'show_video_in_lists',
 						'name'	=> __( 'Show Video in Archive Lists', 'kvp' ),
@@ -133,28 +140,6 @@ class Katalyst_Video_Plus_Settings {
 				
 				array(
 					
-					'import_post_format' => array(
-						'id'	=> 'import_post_format',
-						'name'	=> __( 'Import Post Format', 'kvp' ),
-						'desc'	=> __( 'Changing this option will change the post format on newly imported or audited posts.', 'kvp' ),
-						'type'	=> 'select',
-						'options' => apply_filters( 'kvp_import_post_formats', array(
-								'standard'	=> 'Standard',
-								'video'		=> 'Video',
-								
-							)
-						),
-					),
-					
-					'import_schedule' => array(
-						'id'	=> 'import_schedule',
-						'name'	=> __( 'Import Schedule', 'kvp' ),
-						'desc'	=> __( 'Sets the recurrance schedule of importing. <strong>Note: Force an import from the KVP dashboard to flush the old setting.</strong>', 'kvp' ),
-						'type'	=> 'select',
-						'options' => apply_filters( 'kvp_import_schedules', $cron_schedules ),
-						'std'	=> 'hourly',
-					),
-					
 					'audit_schedule' => array(
 						'id'	=> 'audit_schedule',
 						'name'	=> __( 'Audit Schedule', 'kvp' ),
@@ -164,15 +149,15 @@ class Katalyst_Video_Plus_Settings {
 						'std'	=> 'daily',
 					),
 					
-					'perge_log' => array(
-						'id'	=> 'perge_log',
-						'name'	=> __( 'Perge Log', 'kvp' ),
+					'purge_log' => array(
+						'id'	=> 'purge_log',
+						'name'	=> __( 'Purge Log', 'kvp' ),
 						'desc'	=> __( 'Automatically perges log enteries older than setting.', 'kvp' ),
 						'type'	=> 'select',
 						'options' => apply_filters( 'kvp_import_post_formats', array(
+								'1'		=> __( 'Daily', 'kvp' ),
 								'30'	=> __( '30 Days', 'kvp' ),
-								'90'	=> __( '90 Days', 'kvp' ),
-								'false'	=> __( 'Never', 'kvp' ),
+								'60'	=> __( '60 Days', 'kvp' ),
 							)
 						),
 						'std'	=> 'false',

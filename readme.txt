@@ -2,19 +2,17 @@
 Contributors: Keiser Media
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=billing@katalystvideoplus.com&item_name=Donation+for+Katalyst+Video+Plus
 Tags: import, audit, youtube, thumbnail, twitch, vimeo, ustream, 
-Requires at least: 3.4
-Tested up to: 4.1
-Stable tag: 2.1.2
+Requires at least: 3.4.0
+Tested up to: 4.1.1
+Stable tag: 3.0.0
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
-Katalyst Video Plus is a powerful plugin that automatically creates posts and syncs content from video hosting services.
+Katalyst Video Plus is a powerful plugin that automatically creates video posts and syncs content from video hosting services.
 
 == Description ==
 
-Katalyst Video Plus enables automatic content syncing between a video content or streaming services and WordPress.
-
-[youtube http://www.youtube.com/watch?v=Lm6xsKHPRB4]
+Katalyst Video Plus enables automatic content syncing between a video content or streaming services and WordPress. Add a source, like a playlist from YouTube, and KVP will automatically create posts for that source.
 
 = Extensions =
 Katalyst Video Plus has free and premium extensions to expand functionality. All officially approved extensions can be found in the [Katalyst Videos Plus Add-ons](http://katalystvideoplus.com/extensions/ "Katalyst Videos Plus Add-ons") section.
@@ -38,14 +36,28 @@ YouTube's anonymous api has a limited amount of requests per day. In most cases,
 = Why do only a few users show up as authors? =
 By default, authorship can only be attributed to users with the 'author' role or greater.
 
+= Why are some of the 'Total Videos' for the Channel Type inaccurate? =
+The 'Total Videos' statistic is returned from YouTube; however, this statistic may includes non-public videos.
+
 == Screenshots ==
 
 1. Front-end Display
-2. Dashboard
-3. Accounts
-4. Action Log
+2. Video Index
+3. Categories
+4. Source Index
+5. Source Menu
+6. Source Test Screen
+7. Activity Log
+8. Settings
 
 == Changelog ==
+
+= 3.0.0 (Apr. 8, 2015) =
+* [Added] Sources can now contain Channels, Playlists, Videos, or Search Terms.
+* [Added] Test menu item for sources.
+* [Changed] Videos now import as a custom post type.
+* [Changed] "Accounts" now referred to as "Sources".
+* [Changed] "Action Log" to "Activity Log".
 
 = 2.1.2 (Dec. 23, 2014) =
 * [Changed]	get_video return values.

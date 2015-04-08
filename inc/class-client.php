@@ -11,19 +11,17 @@
 abstract class Katalyst_Video_Plus_Client {
 	
 	/**
-	 * The account information
+	 * The source information
 	 *
 	 * @since    2.0.0
-	 * @access   protected
 	 * @var      array Account Information
 	 */
-	protected $account;
+	protected $source;
 	
 	/**
 	 * The base url for the api
 	 *
 	 * @since    2.0.0
-	 * @access   protected
 	 * @var      string API URL
 	 */
 	protected $api_url;
@@ -32,57 +30,76 @@ abstract class Katalyst_Video_Plus_Client {
 	 * Specifies the maximum number of items returned
 	 *
 	 * @since    2.0.0
-	 * @access   protected
 	 * @var      integer
 	 */
 	protected $limit = 50;
 	
 	/**
-	 * Creates a url from parameter array
+	 * Contains service resources
 	 * 
-	 * @since 2.0.0
+	 * @since 3.0.0
+	 * @var array
 	 */
-	abstract protected function create_url( $query, $resource, $endpoint );
+	protected $resources = array();
 	
 	/**
-	 * Fetches the url and returns the json as an array
+	 * Make an API request
 	 * 
-	 * @since 2.0.0
+	 * @since 3.0.0
+	 * @param  string  $path      An API endpoint
+	 * @param  array   $params    An array of parameters to send to the endpoint
+	 * @param  string  $method    The HTTP method of the request
+	 * @param  boolean $json_body
+	 * @return array             This array contains three keys, 'status' is the status code, 'body' is the object representation of the json response body, and 'headers' are an associated array of response headers
 	 */
-	protected static function request( $url ) {
+	public function request( $path, $params = array(), $method = 'GET', $json_body = true ) {
+		
+		if( !isset($this->resources[$path]) )
+			return kvp_activity_log( __( 'Request', 'kvp' ), 'error', array( 'message' => sprintf( __( '<em>%s</em> is not a valid path for <em>%s</em>', 'kvp' ), $path, $this->source['service'] ) ) );
+		
+		$endpoints = explode( '/', $path );
+		$parameters = array();
+		
+		foreach( $params as $param_name => $param_value ) {
+			
+			if( in_array( $param_name, $endpoints ) && in_array( $param_name, $this->resources[$path]['endpoints'] ) ) {
+				
+				$path = str_replace( $param_name, $param_value, $path );
+				unset($params[$param_name]);
+			}
+			
+		}
+		
+		foreach( $this->resources[$path]['parameters'] as $param_name => $param_spec ) {
+			
+			if( isset($param_spec['required']) && $param_spec['required'] && !isset($params[$param_name]) )
+				return kvp_activity_log( __( 'Request', 'kvp' ), 'error', array( 'message' => sprintf( __( 'Required parameter <em>%s</em> is not set.', 'kvp' ), $param_name ), 'path' => $path, 'params' => $params ) );
+			
+			if( !empty($parameters[$param_name]) && gettype($param_spec['type']) !== $param_spec['type'] )
+				continue;
+			
+			if( isset($params[$param_name]) ) {
+				
+				$value	= $params[$param_name];
+				$parameters[$param_name]  = $value;
+				
+			} else
+				unset($parameters[$param_name]);
+		
+		}
+		
+		$parameters = apply_filters( 'kvp_' . $this->source['service'] . '_parameters', $parameters );
+		
+		$url = $this->api_url . '/' . $path . '?' . http_build_query( $parameters, '', '&' );
 		
 		$response = (array) wp_remote_get( $url, array( 'timeout' => 5, 'sslverify' => false ) );
 		
-		if( !isset($response['response']) || !isset($response['response']['code']) )
-			return false;
-		
-		if( !isset($response['response']['code']) || 200 != $response['response']['code'] || is_wp_error($response) )
-			return new WP_Error( 'response_code', array_merge( array( 'request_url' => $url ), $response ) );
+		if( is_wp_error($response) || !isset($response['response']['code']) || 200 != $response['response']['code'] )
+			return kvp_activity_log( __( 'Request', 'kvp' ), 'error', array( 'message' => $response['response']['message'], 'url' => $url ) );
 		
 		return json_decode( $response['body'], true );
-		
 	}
 	
-	/**
-	 * Checks the status of the account
-	 * 
-	 * @since 2.0.0
-	 * @return string Readable status
-	 */
-	abstract public function check_status();
-	
-	/**
-	 * Generates list of video ids
-	 * 
-	 * @since 2.0.0
-	 */
-	abstract public function get_videos( array $query );
-	
-	/**
-	 * Retrieves video information
-	 * 
-	 * @since 2.0.0
-	 */
-	abstract public function get_video( $video_id );
+	abstract function filter_response( $response );
 	
 }
