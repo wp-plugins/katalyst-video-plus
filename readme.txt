@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=billing@
 Tags: import, audit, youtube, thumbnail, twitch, vimeo, ustream, 
 Requires at least: 3.4.0
 Tested up to: 4.2
-Stable tag: 3.0.0
+Stable tag: 3.0.1
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -51,6 +51,11 @@ The 'Total Videos' statistic is returned from YouTube; however, this statistic m
 8. Settings
 
 == Changelog ==
+
+= 3.0.1 (Apr. 22, 2015) =
+* [Fixed] “add_query_args” exploit.
+* [Fixed] Missing empty variables.
+* [Changed] YouTube player ID.
 
 = 3.0.0 (Apr. 8, 2015) =
 * [Added] Sources can now contain Channels, Playlists, Videos, or Search Terms.

@@ -84,7 +84,7 @@ class Katalyst_Video_Plus_Upgrade {
 			if( version_compare( $upgrade_version, $version, '<' ) ) {
 				
 				foreach( $notices as $notice )
-					echo '<div class="updated"><p>' . $notice . ' | <a href="' . add_query_arg( 'kvp_ignore', true ) . '">' . __( 'Hide All KVP Notices', 'kvp' ) . '</a></p></div>';
+					echo '<div class="updated"><p>' . $notice . ' | <a href="' . esc_url( add_query_arg( 'kvp_ignore', true ) ) . '">' . __( 'Hide All KVP Notices', 'kvp' ) . '</a></p></div>';
 				
 			}
 			

@@ -205,7 +205,7 @@ class KVP_Sources_Table extends WP_List_Table {
 		if ( current_user_can('edit_posts') )
 			$actions['inline hide-if-no-js'] = '<a href="#" class="editinline" title="' . esc_attr( __( 'Edit this source inline' ) ) . '">' . __( 'Edit', 'kvp' ) . '</a>';
 		
-		$actions['test hide-if-no-js'] = '<a href="' . add_query_arg( array( 'action' => 'kvp_source_test', 'id' => $item['id'] ), 'admin-ajax.php') . '&width=600&height=550" class="thickbox" title="' . __( 'Source Test Results: ' ) . $item['name'] . '">' . __( 'Test', 'kvp' ) . '</a>';
+		$actions['test hide-if-no-js'] = '<a href="' . esc_url( add_query_arg( array( 'action' => 'kvp_source_test', 'id' => $item['id'] ), 'admin-ajax.php') ) . '&width=600&height=550" class="thickbox" title="' . __( 'Source Test Results: ' ) . $item['name'] . '">' . __( 'Test', 'kvp' ) . '</a>';
 		
 		$import_lock = get_transient('kvp_import_lock');
 		
