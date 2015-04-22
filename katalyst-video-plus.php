@@ -8,7 +8,7 @@
 * Plugin Name:      Katalyst Video Plus
 * Plugin URI:       http://katalystvideoplus.com/
 * Description:      Create a multiple source video network with WordPress.
-* Version:          3.0.0
+* Version:          3.0.1
 * Author:           Keiser Media Group
 * Author URI:       http://keisermedia.com/
 * License:          GPL-2.0+
