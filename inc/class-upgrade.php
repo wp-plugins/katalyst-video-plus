@@ -309,7 +309,7 @@ class Katalyst_Video_Plus_Upgrade {
 	 * 
 	 * @since 3.1.0
 	 */
-	private function _3_0_0_to_3_0_0() {
+	private function _3_0_0_to_3_1_0() {
 
 		$sources = get_option('kvp_sources');
 

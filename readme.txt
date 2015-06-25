@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=billing@
 Tags: import, audit, youtube, thumbnail, twitch, vimeo, ustream, 
 Requires at least: 3.4.0
 Tested up to: 4.2
-Stable tag: 3.1.0
+Stable tag: 3.1.1
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -51,6 +51,9 @@ The 'Total Videos' statistic is returned from YouTube; however, this statistic m
 8. Settings
 
 == Changelog ==
+
+= 3.1.1 (Jun. 25, 2015) =
+* [Fixed] Improperly Named Function
 
 = 3.1.0 (Jun. 25, 2015) =
 * [Added] Filter 'kvp_enable_new_posts' to reactivate new video links.
