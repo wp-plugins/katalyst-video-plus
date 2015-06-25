@@ -94,16 +94,16 @@ class Katalyst_Video_Plus_Post_Types {
 	public function register_taxonomies() {
 		
 		$cat_labels = array(
-			'name'              => _x( 'Categories', 'taxonomy general name' ),
-			'singular_name'     => _x( 'Category', 'taxonomy singular name' ),
-			'search_items'      => __( 'Search Categories' ),
-			'all_items'         => __( 'All Categories' ),
-			'parent_item'       => __( 'Parent Category' ),
-			'parent_item_colon' => __( 'Parent Category:' ),
-			'edit_item'         => __( 'Edit Category' ),
-			'update_item'       => __( 'Update Category' ),
-			'add_new_item'      => __( 'Add New Category' ),
-			'new_item_name'     => __( 'New Category Name' ),
+			'name'              => _x( 'Video Categories', 'taxonomy general name' ),
+			'singular_name'     => _x( 'Video Category', 'taxonomy singular name' ),
+			'search_items'      => __( 'Search Video Categories' ),
+			'all_items'         => __( 'All Video Categories' ),
+			'parent_item'       => __( 'Parent Video Category' ),
+			'parent_item_colon' => __( 'Parent Video Category:' ),
+			'edit_item'         => __( 'Edit Video Category' ),
+			'update_item'       => __( 'Update Video Category' ),
+			'add_new_item'      => __( 'Add New Video Category' ),
+			'new_item_name'     => __( 'New Video Category Name' ),
 			'menu_name'         => __( 'Categories' ),
 		);
 

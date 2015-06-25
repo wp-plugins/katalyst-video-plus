@@ -28,6 +28,15 @@ class KVP_Sources_Table extends WP_List_Table {
 	 * @var      array  Source types and source type data.
 	 */
 	private $source_types = array();
+
+	/**
+	 * Contains import locked ID
+	 * 
+	 * @since	3.1.0
+	 * @access   private
+	 * @var      string  Source ID.
+	 */
+	private $import_lock = false;
 	
 	/**
 	 * Retrieves essential data
@@ -45,6 +54,7 @@ class KVP_Sources_Table extends WP_List_Table {
 		$this->services		= apply_filters('kvp_services', array() );
 		$this->source_types	= kvp_get_source_types();
         $this->items		= get_option('kvp_sources', array() );
+		$this->import_lock	= get_transient('kvp_import_lock');
 		
 	}
 	
@@ -207,9 +217,15 @@ class KVP_Sources_Table extends WP_List_Table {
 		
 		$actions['test hide-if-no-js'] = '<a href="' . esc_url( add_query_arg( array( 'action' => 'kvp_source_test', 'id' => $item['id'] ), 'admin-ajax.php') ) . '&width=600&height=550" class="thickbox" title="' . __( 'Source Test Results: ' ) . $item['name'] . '">' . __( 'Test', 'kvp' ) . '</a>';
 		
-		$import_lock = get_transient('kvp_import_lock');
-		
-		if( false === $import_lock ) {
+
+				
+		if( isset($_REQUEST['action']) && 'run_source' == $_REQUEST['action'] && isset($_REQUEST['source']) && $_REQUEST['source'] == $item['id'] ) {
+
+			$actions['inline hide-if-no-js'] = '<span>' . __( 'Edit', 'kvp' ) . '</span>';
+			$actions['run']	= '<span>' . __( 'Queued', 'kvp' ) . '</span>';
+			$actions['delete']	= '<span>' . __( 'Delete', 'kvp' ) . '</span>';
+
+		} elseif( false === $this->import_lock ) {
 			
 			if( 'active' == $item['status'] )
 				$actions['run'] = sprintf('<a href="?post_type=kvp_video&page=%s&action=%s&source=%s&_wpnonce=%s" title="' . esc_attr( __( 'Run source' ) ) . '">' . __( 'Run', 'kvp' ) . '</a>', 'kvp-sources', 'run_source', $item['id'], $run_nonce );
@@ -218,12 +234,12 @@ class KVP_Sources_Table extends WP_List_Table {
 			
 		} else {
 			
-			if( $import_lock == $item['id'] ) {
+			if( $this->import_lock == $item['id'] ) {
 				$actions['inline hide-if-no-js'] = '<span>' . __( 'Edit', 'kvp' ) . '</span>';
 				$actions['run']	= '<span>' . __( 'Running', 'kvp' ) . '</span>';
 				$actions['delete']	= '<span>' . __( 'Delete', 'kvp' ) . '</span>';
 			} else {
-				
+
 				if( 'active' == $item['status'] )
 					$actions['run'] = sprintf('<a href="?post_type=kvp_video&page=%s&action=%s&source=%s&_wpnonce=%s" title="' . esc_attr( __( 'Queue source' ) ) . '">' . __( 'Queue', 'kvp' ) . '</a>', 'kvp-sources', 'run_source', $item['id'], $run_nonce );
 				
@@ -299,13 +315,11 @@ class KVP_Sources_Table extends WP_List_Table {
 				if( empty($sources) )
 					return false;
 				
-				$import_lock = get_transient( 'kvp_import_lock' );
-				
 				foreach( $sources as $id ) {
 
 					if( isset($this->items[$id]) ) {
 						
-						if( $import_lock == $id )
+						if( $this->import_lock == $id )
 							continue;
 						
 						wp_unschedule_event( wp_next_scheduled( 'kvp_import_' . $id, array( $id ) ), 'kvp_import_' . $id, array( $id ) );
@@ -314,7 +328,7 @@ class KVP_Sources_Table extends WP_List_Table {
 					}
 
 				}
-				
+
 				break;
 			
 			case 'delete_sources':
@@ -325,8 +339,6 @@ class KVP_Sources_Table extends WP_List_Table {
 				$sources = ( isset($_REQUEST['source']) ) ? $_REQUEST['source'] : null;
     			$sources = ( is_array($sources) ) ? $sources : array($sources);
 				
-				$import_lock = get_transient( 'kvp_import_lock' );
-				
 				if( empty($sources) )
 					return false;
 
@@ -335,7 +347,7 @@ class KVP_Sources_Table extends WP_List_Table {
 	        		if( !current_user_can('delete_users') )
 						break;
 					
-					if( false !== $import_lock && $import_lock == $id )
+					if( false !== $this->import_lock && $this->import_lock == $id )
 						continue;
 							
 					if( isset($this->items[$id]) ) {

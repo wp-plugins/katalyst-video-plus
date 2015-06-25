@@ -534,27 +534,6 @@ class KVP_YouTube_Basic_Client extends Katalyst_Video_Plus_Client {
 			
 		}
 		
-		if( 'videos' == $this->source['type'] ) {
-			
-			$posts_meta = kvp_get_posts_meta();
-			$videos = $this->source['items'];
-			$results['page_info']['scanned'] = count($this->source['items']);
-			
-			foreach( $posts_meta as $post_meta ) {
-				
-				$key = array_search( $post_meta['video_id'], $videos );
-				
-				if( is_int($key) ) {
-					$results['page_info']['duplicates']++;
-					unset($videos[$key]);
-				}
-				
-			}
-			
-			$results['page_info']['total'] = count($this->source['items']);
-			
-		}
-		
 		if( 0 == $results['page_info']['total'] )
 			return $results;
 		

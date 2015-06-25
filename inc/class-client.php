@@ -94,8 +94,8 @@ abstract class Katalyst_Video_Plus_Client {
 		
 		$response = (array) wp_remote_get( $url, array( 'timeout' => 5, 'sslverify' => false ) );
 		
-		if( is_wp_error($response) || !isset($response['response']['code']) || 200 != $response['response']['code'] )
-			return kvp_activity_log( __( 'Request', 'kvp' ), 'error', array( 'message' => $response['response']['message'], 'url' => $url ) );
+		if( is_wp_error($response) )
+			return kvp_activity_log( __( 'Request', 'kvp' ), 'error', array( 'message' => $response->get_error_message(), 'url' => $url ) );
 		
 		return json_decode( $response['body'], true );
 	}

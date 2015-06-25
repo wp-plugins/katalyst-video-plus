@@ -62,6 +62,26 @@ class Katalyst_Video_Plus_Public {
 	}
 
 	/**
+	 * Disables new KVP posts.
+	 *
+	 * @since    3.1.0
+	 */
+	public function disable_new_posts() {
+
+		$enable_new_posts = apply_filters( 'kvp_enable_new_posts', false );
+		
+		if( true == $enable_new_posts )
+			return;
+
+		global $submenu;
+
+		unset($submenu['edit.php?post_type=kvp_video'][10]);
+
+		echo '<style type="text/css">.post-type-kvp_video .wrap .add-new-h2 { display: none; } </style>';
+
+	}
+
+	/**
 	 * Register the stylesheets for the Dashboard.
 	 *
 	 * @since    2.0.0

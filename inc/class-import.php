@@ -224,6 +224,9 @@ class Katalyst_Video_Plus_Import {
 			'items' => array(),
 		);
 		
+		if( 0 !== get_current_user_id() )
+			$results['page_info']['exec_author'] = get_current_user_id();
+		
 		if( !isset($this->services[$source['service']]) )
 			return $results;
 		
@@ -245,7 +248,7 @@ class Katalyst_Video_Plus_Import {
 			return kvp_activity_log( sprintf( __( 'Test Video Request Error for Service: %s and username: %s', 'kvp' ), '<i>' . $source['service'] . '</i>', '<i>' . $source['name'] . '</i>' ), $video_ids, __( 'Core Import', 'kvp' ) );
 		
 		$results = array_merge( $results, $videos );
-		$results['page_info']['execution_time'] = round( microtime(true) - $start_time, 4);
+		$results['page_info']['execution_time'] = round( microtime(true) - $start_time, 4 );
 		
 		return $results;
 		
@@ -403,19 +406,19 @@ class Katalyst_Video_Plus_Import {
 		$upload = wp_upload_bits( $file_name, 0, '', $post['upload_date'] );
 		
 		if( $upload['error'] )
-			return kvp_activity_log( __( 'Import File Error', 'kvp' ), $upload['error'], __( 'Core Import', 'kvp' ) );
+			return kvp_activity_log( __( 'Import File Error', 'kvp' ), __( 'Core Import', 'kvp' ), $upload['error'] );
 		
 		$headers = wp_get_http( $url, $upload['file'] );
 		
 		if( !$headers ) {
 			@unlink( $upload['file'] );
-			return kvp_activity_log( __( 'Import File Error', 'kvp' ), __( 'Remote server did not respond.', 'kvp' ), __( 'Core Import', 'kvp' ) );
+			return kvp_activity_log( __( 'Import File Error', 'kvp' ), __( 'Core Import', 'kvp' ), __( 'Remote server did not respond.', 'kvp' ) );
 		}
 		
 		if( '200' != $headers['response'] ) {
 			
 			@unlink( $upload['file'] );
-			return kvp_activity_log( __( 'Import File Error', 'kvp' ), sprintf( __('Remote server returned error response %d %s.', 'kvp'), esc_html($headers['response']), get_status_header_desc($headers['response']) ), __( 'Core Import', 'kvp' ) );
+			return kvp_activity_log( __( 'Import File Error', 'kvp' ), __( 'Core Import', 'kvp' ), sprintf( __('Remote server returned error response %d %s.', 'kvp'), esc_html($headers['response']), get_status_header_desc($headers['response']) ) );
 			
 		}
 		
@@ -424,13 +427,13 @@ class Katalyst_Video_Plus_Import {
 		if ( isset( $headers['content-length'] ) && $file_size != $headers['content-length'] ) {
 			
 			@unlink( $upload['file'] );
-			return kvp_activity_log( __( 'Import File Error', 'kvp' ), __( 'Remote file is incorrect size.', 'kvp' ), __( 'Core Import', 'kvp' ) );
+			return kvp_activity_log( __( 'Import File Error', 'kvp' ), __( 'Core Import', 'kvp' ), __( 'Remote file is incorrect size.', 'kvp' ) );
 			
 		}
 
 		if ( 0 == $file_size ) {
 			@unlink( $upload['file'] );
-			return kvp_activity_log( __( 'Import File Error', 'kvp' ), __( 'Zero size file downloaded.', 'kvp' ), __( 'Core Import', 'kvp' ) );
+			return kvp_activity_log( __( 'Import File Error', 'kvp' ), __( 'Core Import', 'kvp' ), __( 'Zero size file downloaded.', 'kvp' ) );
 		}
 		
 		return $upload;

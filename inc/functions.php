@@ -174,7 +174,6 @@ function kvp_get_source_types( $service = null ) {
 		
 		'channels'		=> __( 'Channels by ID', 'kvp' ),
 		'playlists'		=> __( 'Playlists by ID', 'kvp' ),
-		'videos'		=> __( 'Videos by ID', 'kvp' ),
 		'search'	=> __( 'Search Terms', 'kvp' ),
 		
 	);

@@ -52,6 +52,9 @@ class Katalyst_Video_Plus_Upgrade {
 		if( version_compare( $this->installed_version, '3.0.0', '<' ) )
 			$this->_2_0_3_to_3_0_0();
 		
+		if( version_compare( $this->installed_version, '3.1.0', '<' ) )
+			$this->_3_0_0_to_3_1_0();
+		
 		if( !version_compare( $this->installed_version, $this->plugin_version, '==' ) )
 			update_option( 'kvp_version', $this->plugin_version );
 		
@@ -299,6 +302,26 @@ class Katalyst_Video_Plus_Upgrade {
 		
 		wp_reset_postdata();
 		
+	}
+	
+	/**
+	 * Upgrades from 3.0.0 to 3.1.0
+	 * 
+	 * @since 3.1.0
+	 */
+	private function _3_0_0_to_3_0_0() {
+
+		$sources = get_option('kvp_sources');
+
+		foreach( $sources as $source => $id ) {
+
+			if( 'videos' == $source['type'] )
+				unset($sources[$id]);
+
+		}
+
+		update_option( 'kvp_sources', $sources );
+
 	}
 	
 }
