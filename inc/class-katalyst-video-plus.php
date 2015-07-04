@@ -153,6 +153,8 @@ class Katalyst_Video_Plus {
 
 		$katalyst_video_plus_admin = new Katalyst_Video_Plus_Admin( $this->get_plugin_info( 'name' ), $this->get_plugin_info( 'slug' ), $this->get_plugin_info( 'version' ) );
 
+		$this->loader->add_action( 'admin_head', $katalyst_video_plus_admin, 'admin_head' );
+		$this->loader->add_action( 'admin_menu', $katalyst_video_plus_admin, 'disable_new_posts' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $katalyst_video_plus_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $katalyst_video_plus_admin, 'enqueue_scripts' );
 		$this->loader->add_action( 'admin_menu', $katalyst_video_plus_admin, 'setup_menu', 9 );
@@ -173,7 +175,6 @@ class Katalyst_Video_Plus {
 
 		$katalyst_video_plus_public = new Katalyst_Video_Plus_Public( $this->get_plugin_info( 'name' ), $this->get_plugin_info( 'slug' ), $this->get_plugin_info( 'version' ) );
 
-		$this->loader->add_action( 'admin_menu', $katalyst_video_plus_public, 'disable_new_posts' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $katalyst_video_plus_public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $katalyst_video_plus_public, 'enqueue_scripts' );
 		$this->loader->add_action( 'wp', $katalyst_video_plus_public, 'audit_single' );

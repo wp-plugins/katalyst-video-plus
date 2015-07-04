@@ -68,6 +68,42 @@ class Katalyst_Video_Plus_Admin {
 	}
 
 	/**
+	 * Add inline style to admin head.
+	 *
+	 * @since    3.1.2
+	 */
+	public function admin_head() {
+
+		if( isset($_GET['post_type']) && 'kvp_video' == $_GET['post_type'] ) {
+
+			$enable_new_posts = apply_filters( 'kvp_enable_new_posts', false );
+			
+			if( true != $enable_new_posts )
+				echo '<style type="text/css"> .post-type-kvp_video .wrap .add-new-h2 { display: none; } </style>';
+			
+		}
+
+	}
+
+	/**
+	 * Disables new KVP posts.
+	 *
+	 * @since    3.1.2
+	 */
+	public function disable_new_posts() {
+
+		$enable_new_posts = apply_filters( 'kvp_enable_new_posts', false );
+		
+		if( true == $enable_new_posts )
+			return;
+
+		global $submenu;
+
+		unset($submenu['edit.php?post_type=kvp_video'][10]);
+
+	}
+
+	/**
 	 * Register the stylesheets for the Dashboard.
 	 *
 	 * @since    2.0.0
