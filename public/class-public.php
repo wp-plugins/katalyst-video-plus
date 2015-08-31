@@ -183,12 +183,19 @@ class Katalyst_Video_Plus_Public {
 		if( empty($post_meta['service']) || empty($post_meta['video_id']) )
 			return '';
 		
-		$size = $this->get_thumbnail_size();
-		
+		if( isset($settings['custom_display_width']) && !empty($settings['custom_display_width']) )
+			$size = preg_replace('/[^0-9.]+/', '', $settings['custom_display_width']);
+
+		elseif( isset($settings['display_width']) && 'automatic' != $settings['display_width'] )
+			$size = $settings['display_width'];
+			
+		else
+			$size = $this->get_thumbnail_size();
+			
 		$atts = array(
 			'video_id'	=> $post_meta['video_id'],
-			'height'	=> ( $size[0] * 9 / 16 ),
-			'width'		=> $size[0],
+			'height'	=> ( $size * 9 / 16 ),
+			'width'		=> $size,
 		);
 		
 		$video_html = apply_filters( 'kvp_' . $post_meta['service'] . '_video_embed', '', $atts );
@@ -212,25 +219,24 @@ class Katalyst_Video_Plus_Public {
      	$sizes = array();
  		
  		foreach( get_intermediate_image_sizes() as $s ){
- 			$sizes[ $s ] = array( 0, 0 );
+ 			$sizes[ $s ] = 0;
  			
  			if( in_array( $s, array( 'thumbnail', 'medium', 'large' ) ) ){
  			
- 				$sizes[ $s ][0] = get_option( $s . '_size_w' );
- 				$sizes[ $s ][1] = get_option( $s . '_size_h' );
+ 				$sizes[ $s ] = get_option( $s . '_size_w' );
  			
  			} else {
  				if( isset( $_wp_additional_image_sizes ) && isset( $_wp_additional_image_sizes[ $s ] ) )
- 					$sizes[ $s ] = array( $_wp_additional_image_sizes[ $s ]['width'], $_wp_additional_image_sizes[ $s ]['height'], );
+ 					$sizes[ $s ] = $_wp_additional_image_sizes[ $s ]['width'];
  			}
  		}
  		
  		$set_size = apply_filters( 'post_thumbnail_size', $this->size );
  		
- 		if( isset($sizes[$set_size]) && is_array($sizes[$set_size]) )
+ 		if( isset($sizes[$set_size]) && ctype_digit($sizes[$set_size]) )
  			return $sizes[$set_size];
  		
- 		return array( 640, 385 );
+ 		return 640;
  		
 	}
 	

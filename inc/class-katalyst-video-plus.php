@@ -155,10 +155,12 @@ class Katalyst_Video_Plus {
 
 		$this->loader->add_action( 'admin_head', $katalyst_video_plus_admin, 'admin_head' );
 		$this->loader->add_action( 'admin_menu', $katalyst_video_plus_admin, 'disable_new_posts' );
+		$this->loader->add_action( 'admin_bar_menu', $katalyst_video_plus_admin, 'disable_admin_bar_new_posts', 999 );
 		$this->loader->add_action( 'admin_enqueue_scripts', $katalyst_video_plus_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $katalyst_video_plus_admin, 'enqueue_scripts' );
 		$this->loader->add_action( 'admin_menu', $katalyst_video_plus_admin, 'setup_menu', 9 );
 		$this->loader->add_action( 'admin_head', $katalyst_video_plus_admin, 'remove_about_menu' );
+		$this->loader->add_action( 'kvp_display_width', $katalyst_video_plus_admin, 'video_dimensions' );
 		$this->loader->add_action( 'admin_init', $katalyst_video_plus_admin, 'setup_meta_boxes' );
 		$this->loader->add_action( 'wp_ajax_kvp_inline_save', $katalyst_video_plus_admin, 'edit_source_ajax' );
 		$this->loader->add_action( 'wp_ajax_kvp_source_test', $katalyst_video_plus_admin, 'test_source_ajax' );

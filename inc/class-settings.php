@@ -131,6 +131,32 @@ class Katalyst_Video_Plus_Settings {
 						'type'	=> 'checkbox'
 					),
 					
+					'video_display_header' => array(
+						'id'	=> 'video_display_header',
+						'name'	=> __( 'Video Display', 'kvp' ),
+						'type'	=> 'header',
+					),
+
+					'display_width' => array(
+						'id'	=> 'display_width',
+						'name'	=> __( 'Display Width', 'kvp' ),
+						'desc'	=> __( 'Set the video width.', 'kvp' ),
+						'type'	=> 'select',
+						'options' => apply_filters( 'kvp_display_width', array(
+								'automatic'		=> __( 'Automatic', 'kvp' ),
+							)
+						),
+						'std'	=> 'automatic',
+					),
+					
+					'custom_display_width' => array(
+						'id'	=> 'custom_display_width',
+						'name'	=> __( 'Custom Display Width', 'kvp' ),
+						'desc'	=> __( 'Enter video width in px to override theme settings. Leave blank to use dropdown.', 'kvp' ),
+						'type'	=> 'text',
+						'size'	=> 'small',
+					),
+					
 				)
 				
 			),

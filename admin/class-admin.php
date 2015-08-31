@@ -104,6 +104,24 @@ class Katalyst_Video_Plus_Admin {
 	}
 
 	/**
+	 * Disables new KVP posts in Admin Menu.
+	 *
+	 * @since    3.2.0
+	 */
+	public function disable_admin_bar_new_posts() {
+
+		$enable_new_posts = apply_filters( 'kvp_enable_new_posts', false );
+		
+		if( true == $enable_new_posts )
+			return;
+
+		global $wp_admin_bar;
+
+		$wp_admin_bar->remove_node('new-kvp_video');
+
+	}
+
+	/**
 	 * Register the stylesheets for the Dashboard.
 	 *
 	 * @since    2.0.0
@@ -255,6 +273,31 @@ class Katalyst_Video_Plus_Admin {
 		if( current_user_can( 'manage_options' ) )
 			include 'partials/view-settings.php';
 		
+	}
+
+	/**
+	 * Creates image sizes array for video dimensions settings
+	 *
+	 * @since  3.2.0
+	 */
+	public function video_dimensions( $sizes ) {
+		global $_wp_additional_image_sizes;
+ 		
+ 		foreach( get_intermediate_image_sizes() as $s ){
+ 			
+ 			if( in_array( $s, array( 'thumbnail', 'medium', 'large' ) ) ){
+ 				
+ 				$width = get_option( $s . '_size_w' );
+ 				$sizes[ $width ] = $s . ' (' . $width . 'px)';
+ 			
+ 			} else {
+ 				if( isset( $_wp_additional_image_sizes ) && isset( $_wp_additional_image_sizes[ $s ] ) )
+ 					$sizes[ $_wp_additional_image_sizes[ $s ]['width'] ] = $s . ' (' . $_wp_additional_image_sizes[ $s ]['width'] . 'px)';
+ 			}
+ 		}
+
+ 		return $sizes;
+
 	}
 	
 	/**
