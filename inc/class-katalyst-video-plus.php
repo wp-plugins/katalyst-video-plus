@@ -201,7 +201,7 @@ class Katalyst_Video_Plus {
 		$katalyst_video_plus_post_types = new Katalyst_Video_Plus_Post_Types( $this->get_plugin_info( 'slug' ), $this->get_plugin_info( 'version' ) );
 		
 		$this->loader->add_action( 'init', $katalyst_video_plus_post_types, 'register_video' );
-		$this->loader->add_action( 'init', $katalyst_video_plus_post_types, 'register_taxonomies' );
+		$this->loader->add_action( 'init', $katalyst_video_plus_post_types, 'register_taxonomies', 9 );
 		$this->loader->add_action( 'admin_enqueue_scripts', $katalyst_video_plus_post_types, 'enqueue_assets' );
 		
 	}
